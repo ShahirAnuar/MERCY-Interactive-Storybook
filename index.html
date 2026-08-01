@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#061a43">
+  <title>MERCY — Interactive Storybook</title>
+  <style>
+    :root { --navy:#061a43; --navy-2:#0b2a66; --gold:#d7ae46; --paper:#faf5e6; --ink:#1e2636; --muted:#5e687a; --line:rgba(215,174,70,.45); --surface:#fffdf7; --shadow:0 18px 45px rgba(5,22,55,.16); font-family:Georgia, 'Times New Roman', serif; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-width:320px; color:var(--ink); background:radial-gradient(circle at top, #f7edcf, #e7dcc0 46%, #d2c4a2); }
+    button, select { font:inherit; }
+    button, select, a { -webkit-tap-highlight-color:transparent; }
+    .skip { position:absolute; left:-999px; top:8px; z-index:10; background:#fff; color:#000; padding:.7rem 1rem; border-radius:.4rem; }
+    .skip:focus { left:8px; }
+    header { color:white; background:linear-gradient(115deg,var(--navy),var(--navy-2)); border-bottom:3px solid var(--gold); padding:1.1rem clamp(1rem,4vw,3rem); display:flex; gap:1rem; align-items:center; justify-content:space-between; }
+    .brand h1 { margin:0; letter-spacing:.16em; font-size:clamp(1.25rem,3vw,2rem); color:#f5d77e; }
+    .brand p { margin:.25rem 0 0; font-family:system-ui,sans-serif; font-size:.76rem; opacity:.86; }
+    .top-actions, .controls { display:flex; flex-wrap:wrap; gap:.55rem; align-items:center; }
+    button, select { border:1px solid rgba(255,255,255,.35); border-radius:.5rem; background:rgba(255,255,255,.1); color:inherit; min-height:2.5rem; padding:.45rem .75rem; cursor:pointer; }
+    button:hover { background:rgba(255,255,255,.2); }
+    button:focus-visible, select:focus-visible, a:focus-visible { outline:3px solid #ffd667; outline-offset:3px; }
+    main { max-width:1580px; padding:clamp(1rem,2.5vw,2.3rem); margin:auto; }
+    .reader-bar { border:1px solid var(--line); background:rgba(255,253,247,.9); box-shadow:var(--shadow); padding:.8rem; border-radius:.8rem .8rem 0 0; display:flex; gap:.75rem; align-items:center; justify-content:space-between; }
+    .controls { color:var(--navy); }
+    .controls button, .controls select { border-color:#bbc5d5; background:white; color:var(--navy); }
+    .controls button[disabled] { opacity:.5; cursor:not-allowed; }
+    #pageSelect { max-width:min(51vw,25rem); }
+    .progress { font-family:system-ui,sans-serif; font-size:.83rem; color:var(--muted); white-space:nowrap; }
+    .progress-bar { height:.35rem; background:#ded5bd; border-radius:99px; overflow:hidden; margin:.65rem .8rem 0; }
+    .progress-bar span { display:block; height:100%; background:var(--gold); transition:width .18s ease; }
+    .spread { min-height:calc(100vh - 15rem); display:grid; grid-template-columns:1fr 1fr; background:var(--navy); box-shadow:var(--shadow); border:1px solid var(--line); overflow:hidden; }
+    .spread.single { grid-template-columns:minmax(0,1fr); max-width:760px; margin:0 auto; }
+    .page { position:relative; min-height:65vh; padding:clamp(.4rem,1vw,.9rem); background:#101b30; border-right:1px solid rgba(215,174,70,.55); }
+    .page:last-child { border-right:0; }
+    .page .page-label { position:absolute; left:.9rem; bottom:.75rem; color:white; background:rgba(0,0,0,.65); font-family:system-ui,sans-serif; font-size:.75rem; border-radius:.25rem; padding:.25rem .45rem; z-index:1; }
+    object { display:block; width:100%; height:calc(100vh - 17rem); min-height:62vh; border:0; background:#fff; }
+    object a { color:#06235b; display:block; padding:2rem; }
+    .caption { background:rgba(255,253,247,.96); padding:1rem 1.2rem; border-radius:0 0 .8rem .8rem; border:1px solid var(--line); border-top:0; min-height:3.8rem; color:var(--navy); }
+    .caption strong { color:#8b650e; }
+    .caption span { font-family:system-ui,sans-serif; font-size:.86rem; color:var(--muted); margin-left:.4rem; }
+    .download { color:inherit; }
+    dialog { max-width:min(42rem,calc(100vw - 2rem)); border:1px solid var(--gold); border-radius:.8rem; padding:1.2rem; box-shadow:var(--shadow); color:var(--ink); }
+    dialog::backdrop { background:rgba(0,0,0,.55); }
+    dialog h2 { margin-top:0; color:var(--navy); }
+    .toc { display:grid; gap:.4rem; max-height:65vh; overflow:auto; padding-right:.3rem; }
+    .toc button { color:var(--navy); background:var(--paper); border-color:#d8c99f; text-align:left; }
+    .toc button.current { border:2px solid var(--gold); background:#fff9df; }
+    .dialog-close { float:right; color:var(--navy); border-color:#bcc5d3; background:white; }
+    footer { text-align:center; color:#3f4650; font: .8rem/1.5 system-ui,sans-serif; padding:1.2rem; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    body.night { --paper:#151b29; --ink:#edf2ff; --muted:#c6cfe0; --surface:#111827; background:#07111f; }
+    body.night .reader-bar, body.night .caption { background:#121b2a; color:#edf2ff; border-color:#765d22; }
+    body.night .controls button, body.night .controls select { background:#202d42; color:#eef4ff; border-color:#566983; }
+    body.night .progress-bar { background:#314057; }
+    @media (max-width:760px) { header { align-items:flex-start; flex-direction:column; } .reader-bar { align-items:stretch; flex-direction:column; } .progress { text-align:right; } .spread { grid-template-columns:1fr; } .spread.single { max-width:none; } .page { min-height:47vh; border-right:0; border-bottom:1px solid rgba(215,174,70,.55); } .page:last-child { border-bottom:0; } object { min-height:45vh; height:62vh; } #pageSelect { max-width:100%; flex:1; } }
+    @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto !important; transition:none !important; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#reader">Skip to reader</a>
+  <header>
+    <div class="brand"><h1>MERCY</h1><p>Interactive Storybook · Shahir Anuar</p></div>
+    <div class="top-actions"><button id="tocButton" type="button" aria-haspopup="dialog">Contents</button><button id="themeButton" type="button" aria-pressed="false">Night theme</button><button id="bookmarkButton" type="button" aria-pressed="false">Bookmark</button></div>
+  </header>
+  <main id="reader" tabindex="-1">
+    <section class="reader-bar" aria-label="Reader controls">
+      <div class="controls"><button id="firstButton" type="button" aria-label="First section">First</button><button id="previousButton" type="button" aria-label="Previous section">← Previous</button><label class="sr-only" for="pageSelect">Select section</label><select id="pageSelect"></select><button id="nextButton" type="button" aria-label="Next section">Next →</button><button id="lastButton" type="button" aria-label="Last section">Last</button></div>
+      <div class="progress" id="progressText" aria-live="polite"></div>
+    </section>
+    <div class="progress-bar" aria-hidden="true"><span id="progressFill"></span></div>
+    <section id="spread" class="spread" aria-label="Current storybook pages"></section>
+    <div class="caption" id="caption"></div>
+  </main>
+  <footer>Use the arrow keys to move through the book. Each original PDF page is preserved exactly as uploaded.</footer>
+  <dialog id="tocDialog" aria-labelledby="tocTitle"><button class="dialog-close" id="tocClose" type="button">Close</button><h2 id="tocTitle">MERCY contents</h2><div class="toc" id="tocList"></div></dialog>
+  <script>
+  (() => {
+    const asset = n => n;
+    const single = (file, label, chapter='Front matter') => ({kind:'single', left:asset(file), label, chapter});
+    const pair = (image, text, number, chapter) => ({kind:'spread', left:asset(image), right:asset(text), label:`${chapter} · Page ${number}`, chapter, number});
+    const pages = [
+      single('MERCY_1_1.book-cover.pdf', 'Book cover'),
+      single('MERCY_2_2.title-mercy.pdf', 'Title page'),
+      single('MERCY_3_3.copyright.pdf', 'Copyright'),
+      single('MERCY_4_4.dedication-1.pdf', 'Dedication'),
+      single('MERCY_5_5.dedication-2.pdf', 'Dedication — children'),
+      single('MERCY_6_6.table-of-content.pdf', 'Table of contents'),
+      single('MERCY_7_7.synopsis.pdf', 'Synopsis'),
+      single('MERCY_8_8.chapter-1.pdf', 'Chapter 1 — The Balance', 'Chapter 1 — The Balance'),
+      pair('MERCY_9_9.image-1.pdf','MERCY_10_10.mercy-page-1.pdf',1,'Chapter 1 — The Balance'),
+      pair('MERCY_11_11.image-2.pdf','MERCY_12_12.mercy-page-2.pdf',2,'Chapter 1 — The Balance'),
+      pair('MERCY_13_13.image-3.pdf','MERCY_14_14.mercy-page-3.pdf',3,'Chapter 1 — The Balance'),
+      pair('MERCY_15_15.image-4.pdf','MERCY_16_16.mercy-page-4.pdf',4,'Chapter 1 — The Balance'),
+      pair('MERCY_17_17.image-5.pdf','MERCY_18_18.mercy-page-5.pdf',5,'Chapter 1 — The Balance'),
+      pair('MERCY_19_19.image-6.pdf','MERCY_20_20.mercy-page-6.pdf',6,'Chapter 1 — The Balance'),
+      pair('MERCY_21_21.image-7.pdf','MERCY_22_22.mercy-page-7.pdf',7,'Chapter 1 — The Balance'),
+      pair('MERCY_23_23.image-8.pdf','MERCY_24_24.mercy-page-8.pdf',8,'Chapter 1 — The Balance'),
+      pair('MERCY_25_25.image-9.pdf','MERCY_26_26.mercy-page-9.pdf',9,'Chapter 1 — The Balance'),
+      single('MERCY_27_26a-chapter-2-theboywhoaskedtoomuch.pdf', 'Chapter 2 — The Boy Who Asked Too Much', 'Chapter 2 — The Boy Who Asked Too Much'),
+      pair('MERCY_28_27.image-10.pdf','MERCY_29_28.mercy-page-10.pdf',10,'Chapter 2 — The Boy Who Asked Too Much'),
+      pair('MERCY_30_29.image-11.pdf','MERCY_31_30.mercy-page-11.pdf',11,'Chapter 2 — The Boy Who Asked Too Much'),
+      pair('MERCY_32_31.image-12.pdf','MERCY_33_32.mercy-page-12.pdf',12,'Chapter 2 — The Boy Who Asked Too Much'),
+      pair('MERCY_34_33.image-13.pdf','MERCY_35_34.mercy-page-13.pdf',13,'Chapter 2 — The Boy Who Asked Too Much'),
+      pair('MERCY_36_35.image-14.pdf','MERCY_37_36.mercy-page-14.pdf',14,'Chapter 2 — The Boy Who Asked Too Much'),
+      pair('MERCY_38_37.image-15.pdf','MERCY_39_38.mercy-page-15.pdf',15,'Chapter 2 — The Boy Who Asked Too Much'),
+      pair('MERCY_40_39.image-16.pdf','MERCY_41_40.mercy-page-16.pdf',16,'Chapter 2 — The Boy Who Asked Too Much'),
+      pair('MERCY_42_41.image-17.pdf','MERCY_43_42.mercy-page-17.pdf',17,'Chapter 2 — The Boy Who Asked Too Much'),
+      pair('MERCY_44_43.image-18.pdf','MERCY_45_44.mercy-page-18.pdf',18,'Chapter 2 — The Boy Who Asked Too Much'),
+      pair('MERCY_46_45.image-19.pdf','MERCY_47_46.mercy-page-19.pdf',19,'Chapter 2 — The Boy Who Asked Too Much'),
+      single('MERCY_48_47-chapter-3-mercy.pdf', 'Chapter 3 — MERCY', 'Chapter 3 — MERCY'),
+      pair('MERCY_49_48.image-20.pdf','MERCY_50_49mercy-page-20.pdf',20,'Chapter 3 — MERCY'),
+      pair('MERCY_51_50.image-21.pdf','MERCY_52_51.mercy-page-21.pdf',21,'Chapter 3 — MERCY'),
+      pair('MERCY_53_52.image-21.pdf','MERCY_54_53.mercy-page-22.pdf',22,'Chapter 3 — MERCY'),
+      pair('MERCY_55_54.image-22.pdf','MERCY_56_55.mercy-page-23.pdf',23,'Chapter 3 — MERCY'),
+      pair('MERCY_57_56.image-23.pdf','MERCY_58_57.mercy-page-24.pdf',24,'Chapter 3 — MERCY'),
+      pair('MERCY_59_58.image-25.pdf','MERCY_60_59.mercy-page-25.pdf',25,'Chapter 3 — MERCY'),
+      pair('MERCY_61_60.image-26.pdf','MERCY_62_61.mercy-page-26.pdf',26,'Chapter 3 — MERCY'),
+      pair('MERCY_63_62.image-27.pdf','MERCY_64_63.mercy-page-27.pdf',27,'Chapter 3 — MERCY'),
+      pair('MERCY_65_64.image-28.pdf','MERCY_66_65.mercy-page-28.pdf',28,'Chapter 3 — MERCY'),
+      pair('MERCY_67_66.image-29.pdf','MERCY_68_67.mercy-page-29.pdf',29,'Chapter 3 — MERCY'),
+      pair('MERCY_69_68.image-30.pdf','MERCY_70_69.mercy-page-30.pdf',30,'Chapter 3 — MERCY'),
+      pair('MERCY_71_70.image-31.pdf','MERCY_72_71.mercy-page-31.pdf',31,'Chapter 3 — MERCY'),
+      pair('MERCY_73_72.image-32.pdf','MERCY_74_73.mercy-page-32.pdf',32,'Chapter 3 — MERCY'),
+      pair('MERCY_75_74.image-33.pdf','MERCY_76_75.mercy-page-33.pdf',33,'Chapter 3 — MERCY'),
+      pair('MERCY_77_76.image-34.pdf','MERCY_78_77.mercy-page-34.pdf',34,'Chapter 3 — MERCY'),
+      pair('MERCY_79_78.image-35.pdf','MERCY_80_79.mercy-page-35.pdf',35,'Chapter 3 — MERCY'),
+      pair('MERCY_81_80.image-36.pdf','MERCY_82_81.mercy-page-36.pdf',36,'Chapter 3 — MERCY'),
+      pair('MERCY_83_82.image-37.pdf','MERCY_84_83.mercy-page-37.pdf',37,'Chapter 3 — MERCY'),
+      pair('MERCY_85_84.image-38.pdf','MERCY_86_85.mercy-page-38.pdf',38,'Chapter 3 — MERCY'),
+      single('MERCY_87_86.final-dua.pdf', 'Final dua', 'End matter'),
+      single('MERCY_88_87.about-the-author.pdf', 'About the author', 'End matter'),
+      single('MERCY_89_88.back-cover.pdf', 'Back cover', 'End matter')
+    ];
+    const $ = id => document.getElementById(id);
+    const state = { index: Number(localStorage.getItem('mercy-reader-position') || 0), bookmarks: JSON.parse(localStorage.getItem('mercy-reader-bookmarks') || '[]') };
+    if (state.index < 0 || state.index >= pages.length) state.index = 0;
+    const selector = $('pageSelect'), toc = $('tocList'), spread = $('spread');
+    function safe(text) { const el=document.createElement('span'); el.textContent=text; return el.innerHTML; }
+    function pdfPanel(file, label) { return `<article class="page" aria-label="${safe(label)}"><object data="${encodeURI(file)}#view=FitH" type="application/pdf" aria-label="${safe(label)}"><a href="${encodeURI(file)}" target="_blank" rel="noopener">Open ${safe(label)} PDF</a></object><span class="page-label">${safe(label)}</span></article>`; }
+    function update() {
+      const p = pages[state.index];
+      spread.className = `spread ${p.kind === 'single' ? 'single' : ''}`;
+      spread.innerHTML = p.kind === 'single' ? pdfPanel(p.left, p.label) : pdfPanel(p.left, `${p.chapter}, illustration for page ${p.number}`) + pdfPanel(p.right, `${p.chapter}, story text page ${p.number}`);
+      $('caption').innerHTML = `<strong>${safe(p.label)}</strong><span>${safe(p.kind === 'single' ? 'Original book page' : 'Illustration on the left · story text on the right')}</span>`;
+      selector.value = state.index;
+      $('progressText').textContent = `Section ${state.index + 1} of ${pages.length}`;
+      $('progressFill').style.width = `${((state.index + 1) / pages.length) * 100}%`;
+      $('previousButton').disabled = $('firstButton').disabled = state.index === 0;
+      $('nextButton').disabled = $('lastButton').disabled = state.index === pages.length - 1;
+      const marked = state.bookmarks.includes(state.index);
+      $('bookmarkButton').setAttribute('aria-pressed', marked); $('bookmarkButton').textContent = marked ? 'Bookmarked' : 'Bookmark';
+      [...toc.children].forEach((b,i)=>b.classList.toggle('current',i===state.index));
+      localStorage.setItem('mercy-reader-position', state.index);
+    }
+    pages.forEach((p,i)=> { const opt=document.createElement('option'); opt.value=i; opt.textContent=`${i+1}. ${p.label}`; selector.append(opt); const b=document.createElement('button'); b.type='button'; b.textContent=`${i+1}. ${p.label}`; b.addEventListener('click',()=>{state.index=i; update(); $('tocDialog').close(); $('reader').focus();}); toc.append(b); });
+    function move(amount) { state.index=Math.max(0,Math.min(pages.length-1,state.index+amount)); update(); $('reader').scrollIntoView({block:'start'}); }
+    $('firstButton').onclick=()=>{state.index=0;update()}; $('lastButton').onclick=()=>{state.index=pages.length-1;update()}; $('previousButton').onclick=()=>move(-1); $('nextButton').onclick=()=>move(1); selector.onchange=()=>{state.index=Number(selector.value);update()};
+    $('tocButton').onclick=()=>$('tocDialog').showModal(); $('tocClose').onclick=()=>$('tocDialog').close();
+    $('bookmarkButton').onclick=()=>{const i=state.bookmarks.indexOf(state.index); i<0?state.bookmarks.push(state.index):state.bookmarks.splice(i,1); localStorage.setItem('mercy-reader-bookmarks',JSON.stringify(state.bookmarks));update()};
+    $('themeButton').onclick=()=>{const night=document.body.classList.toggle('night'); $('themeButton').setAttribute('aria-pressed',night); $('themeButton').textContent=night?'Day theme':'Night theme'; localStorage.setItem('mercy-reader-theme',night?'night':'day')};
+    if(localStorage.getItem('mercy-reader-theme')==='night') $('themeButton').click();
+    document.addEventListener('keydown',e=>{if(e.target.matches('select,button')||$('tocDialog').open)return; if(e.key==='ArrowLeft') move(-1); if(e.key==='ArrowRight') move(1);});
+    update();
+  })();
+  </script>
+</body>
+</html>
