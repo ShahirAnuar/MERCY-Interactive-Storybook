@@ -1,1 +1,1 @@
-# MERCY-Interactive-Storybook
+# MERCY
