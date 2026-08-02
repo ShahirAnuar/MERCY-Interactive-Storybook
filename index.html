@@ -67,7 +67,7 @@
     body.night .toc button:hover { background:#2a3d5d; color:#fff; }
     body.night .toc button.current { background:#354b70; color:#ffe28b; border-color:#f0c85e; }
     body.night .dialog-close { background:#fff7dd; color:#11254a; border-color:#d7ae46; }
-    @media (max-width:760px) { header { align-items:flex-start; flex-direction:column; } .reader-bar { align-items:stretch; flex-direction:column; } .progress { text-align:right; } .spread { grid-template-columns:1fr; } .spread.single { max-width:none; } .page { min-height:47vh; border-right:0; border-bottom:1px solid rgba(215,174,70,.55); } .page:last-child { border-bottom:0; } .pdf-canvas-wrap, .pdf-loading, .pdf-error { min-height:45vh; } #pageSelect { max-width:100%; flex:1; } .caption .desktop-layout { display:none; } .caption .mobile-layout { display:inline; } }
+    @media (max-width:760px) { header { align-items:flex-start; flex-direction:column; } .reader-bar { align-items:stretch; flex-direction:column; } .controls { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.4rem; width:100%; } .controls button { min-width:0; padding:.4rem .15rem; font-size:clamp(.68rem,3.25vw,.82rem); white-space:nowrap; } #firstButton { grid-column:1; grid-row:1; } #previousButton { grid-column:2; grid-row:1; } #nextButton { grid-column:3; grid-row:1; } #lastButton { grid-column:4; grid-row:1; } #pageSelect { grid-column:1/-1; grid-row:2; max-width:none; width:100%; min-width:0; font-size:clamp(.74rem,3.5vw,.88rem); } .progress { display:none; } .spread { grid-template-columns:1fr; } .spread.single { max-width:none; } .page { min-height:47vh; border-right:0; border-bottom:1px solid rgba(215,174,70,.55); } .page:last-child { border-bottom:0; } .pdf-canvas-wrap, .pdf-loading, .pdf-error { min-height:45vh; } .caption .desktop-layout { display:none; } .caption .mobile-layout { display:inline; } }
     @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto !important; transition:none !important; } }
   </style>
 </head>
@@ -96,7 +96,7 @@
     }
     const asset = n => n;
     const single = (file, label, chapter='Front matter') => ({kind:'single', left:asset(file), label, chapter});
-    const pair = (image, text, number, chapter) => ({kind:'spread', left:asset(image), right:asset(text), label:`${chapter} · Page ${number}`, chapter, number});
+    const pair = (image, text, number, chapter) => ({kind:'spread', left:asset(image), right:asset(text), label:`${chapter} • Page ${number}`, chapter, number});
     const pages = [
       single('MERCY_1_1.book-cover.pdf', 'Book cover'),
       single('MERCY_2_2.title-mercy.pdf', 'Title page'),
@@ -156,8 +156,9 @@
     const selector = $('pageSelect'), toc = $('tocList'), spread = $('spread');
     function safe(text) { const el=document.createElement('span'); el.textContent=text; return el.innerHTML; }
     let renderToken = 0;
-    function pdfPanel(file, label) {
-      return `<article class="page" aria-label="${safe(label)}"><div class="pdf-canvas-wrap" data-pdf="${safe(file)}" data-label="${safe(label)}"><div class="pdf-loading" role="status">Loading ${safe(label)}…</div><canvas role="img" aria-label="${safe(label)}"></canvas><div class="pdf-error" role="alert"><span>This page could not be displayed.</span><a href="${encodeURI(file)}" target="_blank" rel="noopener">Open ${safe(label)} PDF</a></div></div><span class="page-label">${safe(label)}</span></article>`;
+    function pdfPanel(file, label, showOverlayLabel = true) {
+      const overlayLabel = showOverlayLabel ? `<span class="page-label">${safe(label)}</span>` : '';
+      return `<article class="page" aria-label="${safe(label)}"><div class="pdf-canvas-wrap" data-pdf="${safe(file)}" data-label="${safe(label)}"><div class="pdf-loading" role="status">Loading ${safe(label)}…</div><canvas role="img" aria-label="${safe(label)}"></canvas><div class="pdf-error" role="alert"><span>This page could not be displayed.</span><a href="${encodeURI(file)}" target="_blank" rel="noopener">Open ${safe(label)} PDF</a></div></div>${overlayLabel}</article>`;
     }
     async function renderPdfPanel(wrap, token) {
       if (!window.pdfjsLib) {
@@ -196,7 +197,7 @@
     function update() {
       const p = pages[state.index];
       spread.className = `spread ${p.kind === 'single' ? 'single' : ''}`;
-      spread.innerHTML = p.kind === 'single' ? pdfPanel(p.left, p.label) : pdfPanel(p.left, `${p.chapter}, illustration for page ${p.number}`) + pdfPanel(p.right, `${p.chapter}, story text page ${p.number}`);
+      spread.innerHTML = p.kind === 'single' ? pdfPanel(p.left, p.label) : pdfPanel(p.left, `${p.chapter}, illustration for page ${p.number}`) + pdfPanel(p.right, `${p.chapter}, story text page ${p.number}`, false);
       const captionGuide = p.kind === 'single'
         ? '<span>Original book page</span>'
         : '<span class="desktop-layout">Illustration on the left · story text on the right</span><span class="mobile-layout">Illustration on the top · story text on the bottom</span>';
@@ -212,7 +213,7 @@
       localStorage.setItem('mercy-reader-position', state.index);
       renderVisiblePdfs();
     }
-    pages.forEach((p,i)=> { const opt=document.createElement('option'); opt.value=i; opt.textContent=`${i+1}. ${p.label}`; selector.append(opt); const b=document.createElement('button'); b.type='button'; b.textContent=`${i+1}. ${p.label}`; b.addEventListener('click',()=>{state.index=i; update(); $('tocDialog').close(); $('reader').focus();}); toc.append(b); });
+    pages.forEach((p,i)=> { const opt=document.createElement('option'); opt.value=i; opt.textContent=p.label; selector.append(opt); const b=document.createElement('button'); b.type='button'; b.textContent=`${i+1}. ${p.label}`; b.addEventListener('click',()=>{state.index=i; update(); $('tocDialog').close(); $('reader').focus();}); toc.append(b); });
     function move(amount) { state.index=Math.max(0,Math.min(pages.length-1,state.index+amount)); update(); $('reader').scrollIntoView({block:'start'}); }
     $('firstButton').onclick=()=>{state.index=0;update()}; $('lastButton').onclick=()=>{state.index=pages.length-1;update()}; $('previousButton').onclick=()=>move(-1); $('nextButton').onclick=()=>move(1); selector.onchange=()=>{state.index=Number(selector.value);update()};
     $('tocButton').onclick=()=>$('tocDialog').showModal(); $('tocClose').onclick=()=>$('tocDialog').close();
