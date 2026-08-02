@@ -34,8 +34,8 @@
     .page { position:relative; min-height:65vh; padding:clamp(.4rem,1vw,.9rem); background:#101b30; border-right:1px solid rgba(215,174,70,.55); }
     .page:last-child { border-right:0; }
     .page .page-label { position:absolute; left:.9rem; bottom:.75rem; color:white; background:rgba(0,0,0,.65); font-family:system-ui,sans-serif; font-size:.75rem; border-radius:.25rem; padding:.25rem .45rem; z-index:1; }
-    .pdf-canvas-wrap { width:100%; min-height:62vh; display:flex; align-items:flex-start; justify-content:center; background:#202020; overflow:hidden; }
-    .pdf-canvas-wrap canvas { display:none; width:100%; height:auto; background:#fff; box-shadow:0 2px 18px rgba(0,0,0,.28); touch-action:pinch-zoom; }
+    .pdf-canvas-wrap { width:100%; min-height:62vh; display:flex; align-items:flex-start; justify-content:center; background:#202020; overflow:hidden; touch-action:pan-y pinch-zoom; }
+    .pdf-canvas-wrap canvas { display:none; width:100%; height:auto; background:#fff; box-shadow:0 2px 18px rgba(0,0,0,.28); touch-action:pan-y pinch-zoom; }
     .pdf-canvas-wrap.ready canvas { display:block; }
     .pdf-loading, .pdf-error { width:100%; min-height:62vh; display:flex; align-items:center; justify-content:center; padding:2rem; text-align:center; color:#edf2ff; font:600 .95rem/1.5 system-ui,sans-serif; }
     .pdf-error { display:none; flex-direction:column; gap:.8rem; }
@@ -46,6 +46,7 @@
     .caption { background:rgba(255,253,247,.96); padding:1rem 1.2rem; border-radius:0 0 .8rem .8rem; border:1px solid var(--line); border-top:0; min-height:3.8rem; color:var(--navy); }
     .caption strong { color:#8b650e; }
     .caption span { font-family:system-ui,sans-serif; font-size:.86rem; color:var(--muted); margin-left:.4rem; }
+    .caption .mobile-layout { display:none; }
     .download { color:inherit; }
     dialog { max-width:min(42rem,calc(100vw - 2rem)); border:1px solid var(--gold); border-radius:.8rem; padding:1.2rem; box-shadow:var(--shadow); color:var(--ink); }
     dialog::backdrop { background:rgba(0,0,0,.55); }
@@ -60,7 +61,13 @@
     body.night .reader-bar, body.night .caption { background:#121b2a; color:#edf2ff; border-color:#765d22; }
     body.night .controls button, body.night .controls select { background:#202d42; color:#eef4ff; border-color:#566983; }
     body.night .progress-bar { background:#314057; }
-    @media (max-width:760px) { header { align-items:flex-start; flex-direction:column; } .reader-bar { align-items:stretch; flex-direction:column; } .progress { text-align:right; } .spread { grid-template-columns:1fr; } .spread.single { max-width:none; } .page { min-height:47vh; border-right:0; border-bottom:1px solid rgba(215,174,70,.55); } .page:last-child { border-bottom:0; } .pdf-canvas-wrap, .pdf-loading, .pdf-error { min-height:45vh; } #pageSelect { max-width:100%; flex:1; } }
+    body.night dialog { background:#101a2a; color:#f8f4e8; border-color:#d7ae46; }
+    body.night dialog h2 { color:#ffe08a; }
+    body.night .toc button { background:#1d2b43; color:#fff4cf; border-color:#90732e; }
+    body.night .toc button:hover { background:#2a3d5d; color:#fff; }
+    body.night .toc button.current { background:#354b70; color:#ffe28b; border-color:#f0c85e; }
+    body.night .dialog-close { background:#fff7dd; color:#11254a; border-color:#d7ae46; }
+    @media (max-width:760px) { header { align-items:flex-start; flex-direction:column; } .reader-bar { align-items:stretch; flex-direction:column; } .progress { text-align:right; } .spread { grid-template-columns:1fr; } .spread.single { max-width:none; } .page { min-height:47vh; border-right:0; border-bottom:1px solid rgba(215,174,70,.55); } .page:last-child { border-bottom:0; } .pdf-canvas-wrap, .pdf-loading, .pdf-error { min-height:45vh; } #pageSelect { max-width:100%; flex:1; } .caption .desktop-layout { display:none; } .caption .mobile-layout { display:inline; } }
     @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto !important; transition:none !important; } }
   </style>
 </head>
@@ -190,7 +197,10 @@
       const p = pages[state.index];
       spread.className = `spread ${p.kind === 'single' ? 'single' : ''}`;
       spread.innerHTML = p.kind === 'single' ? pdfPanel(p.left, p.label) : pdfPanel(p.left, `${p.chapter}, illustration for page ${p.number}`) + pdfPanel(p.right, `${p.chapter}, story text page ${p.number}`);
-      $('caption').innerHTML = `<strong>${safe(p.label)}</strong><span>${safe(p.kind === 'single' ? 'Original book page' : 'Illustration on the left · story text on the right')}</span>`;
+      const captionGuide = p.kind === 'single'
+        ? '<span>Original book page</span>'
+        : '<span class="desktop-layout">Illustration on the left · story text on the right</span><span class="mobile-layout">Illustration on the top · story text on the bottom</span>';
+      $('caption').innerHTML = `<strong>${safe(p.label)}</strong>${captionGuide}`;
       selector.value = state.index;
       $('progressText').textContent = `Section ${state.index + 1} of ${pages.length}`;
       $('progressFill').style.width = `${((state.index + 1) / pages.length) * 100}%`;
