@@ -22,10 +22,12 @@
     button:focus-visible, select:focus-visible, a:focus-visible { outline:3px solid #ffd667; outline-offset:3px; }
     main { max-width:1580px; padding:clamp(1rem,2.5vw,2.3rem); margin:auto; }
     .reader-bar { border:1px solid var(--line); background:rgba(255,253,247,.9); box-shadow:var(--shadow); padding:.8rem; border-radius:.8rem .8rem 0 0; display:flex; gap:.75rem; align-items:center; justify-content:space-between; }
-    .controls { color:var(--navy); }
+    .controls { color:var(--navy); display:grid; grid-template-columns:1fr; gap:.5rem; width:min(100%,46rem); }
+    .nav-buttons { display:grid; grid-template-columns:repeat(4,1fr); gap:.4rem; width:100%; min-width:0; }
     .controls button, .controls select { border-color:#bbc5d5; background:white; color:var(--navy); }
     .controls button[disabled] { opacity:.5; cursor:not-allowed; }
-    #pageSelect { max-width:min(51vw,25rem); }
+    .nav-buttons button { width:100%; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #pageSelect { max-width:none; width:100%; min-width:0; }
     .progress { font-family:system-ui,sans-serif; font-size:.83rem; color:var(--muted); white-space:nowrap; }
     .progress-bar { height:.35rem; background:#ded5bd; border-radius:99px; overflow:hidden; margin:.65rem .8rem 0; }
     .progress-bar span { display:block; height:100%; background:var(--gold); transition:width .18s ease; }
@@ -47,7 +49,7 @@
     .pdf-canvas-wrap.failed .pdf-error { display:flex; }
     .pdf-canvas-wrap.ready .pdf-loading, .pdf-canvas-wrap.ready .pdf-error { display:none; }
     .pdf-error a { color:#f5d77e; }
-    .caption { background:rgba(255,253,247,.96); padding:1rem 1.2rem; border-radius:0 0 .8rem .8rem; border:1px solid var(--line); border-top:0; min-height:3.8rem; color:var(--navy); }
+    .caption { background:rgba(255,253,247,.96); padding:1rem 1.2rem; border-radius:0 0 .8rem .8rem; border:1px solid var(--line); border-top:0; min-height:3.8rem; color:var(--navy); text-align:center; display:flex; align-items:center; justify-content:center; }
     .caption strong { color:#8b650e; }
     .caption span { font-family:system-ui,sans-serif; font-size:.86rem; color:var(--muted); margin-left:.4rem; }
     .caption .mobile-layout { display:none; }
@@ -92,7 +94,51 @@
     .share-toast { position:fixed; left:50%; bottom:1.25rem; transform:translate(-50%,1rem); z-index:10000; max-width:min(92vw,32rem); padding:.75rem 1rem; border:1px solid var(--gold); border-radius:.65rem; background:#061a43; color:#fff7dd; box-shadow:var(--shadow); font:600 .86rem/1.35 system-ui,sans-serif; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; text-align:center; }
     .share-toast.show { opacity:1; transform:translate(-50%,0); }
 
-    @media (max-width:760px) { .tts-panel { grid-template-columns:1fr 1fr; align-items:stretch; } .tts-actions { grid-column:1/-1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); } .tts-actions button { padding:.4rem .25rem; font-size:.8rem; } .tts-field select { width:100%; max-width:none; } .tts-auto { grid-column:1/-1; white-space:normal; } header { align-items:flex-start; flex-direction:column; } .reader-bar { align-items:stretch; flex-direction:column; } .controls { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.4rem; width:100%; } .controls button { min-width:0; padding:.4rem .15rem; font-size:clamp(.68rem,3.25vw,.82rem); white-space:nowrap; } #firstButton { grid-column:1; grid-row:1; } #previousButton { grid-column:2; grid-row:1; } #nextButton { grid-column:3; grid-row:1; } #lastButton { grid-column:4; grid-row:1; } #pageSelect { grid-column:1/-1; grid-row:2; max-width:none; width:100%; min-width:0; font-size:clamp(.74rem,3.5vw,.88rem); } .progress { display:none; } .spread { grid-template-columns:1fr; } .spread.single { max-width:none; } .page { min-height:47vh; border-right:0; border-bottom:1px solid rgba(215,174,70,.55); } .page:last-child { border-bottom:0; } .pdf-canvas-wrap, .pdf-loading, .pdf-error { min-height:45vh; } .caption .desktop-layout { display:none; } .caption .mobile-layout { display:inline; } }
+    @media (max-width:760px) { .tts-panel { grid-template-columns:1fr 1fr; align-items:stretch; } .tts-actions { grid-column:1/-1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); } .tts-actions button { padding:.4rem .25rem; font-size:.8rem; } .tts-field select { width:100%; max-width:none; } .tts-auto { grid-column:1/-1; white-space:normal; } header { align-items:flex-start; flex-direction:column; } .reader-bar { align-items:stretch; flex-direction:column; } .controls { display:grid; grid-template-columns:1fr; gap:.4rem; width:100%; } .nav-buttons { display:grid; grid-template-columns:repeat(4,1fr); gap:.28rem; width:100%; min-width:0; } .nav-buttons button { width:100%; min-width:0; padding:.4rem .05rem; font-size:clamp(.6rem,2.75vw,.8rem); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } #pageSelect { max-width:none; width:100%; min-width:0; font-size:clamp(.74rem,3.5vw,.88rem); } .progress { display:none; } .spread { grid-template-columns:1fr; } .spread.single { max-width:none; } .page { min-height:47vh; border-right:0; border-bottom:1px solid rgba(215,174,70,.55); } .page:last-child { border-bottom:0; } .pdf-canvas-wrap, .pdf-loading, .pdf-error { min-height:45vh; } .caption .desktop-layout { display:none; } .caption .mobile-layout { display:inline; } }
+
+    .panel-viewer[hidden] { display:none; }
+    .panel-viewer {
+      position:fixed; inset:0; z-index:20000; width:100vw; height:100dvh;
+      background:#000; display:flex; align-items:center; justify-content:center;
+      overflow:hidden; touch-action:pan-y pinch-zoom; overscroll-behavior:contain; overscroll-behavior-x:none;
+    }
+    .panel-viewer-stage {
+      width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+      overflow:auto; touch-action:pan-y pinch-zoom; overscroll-behavior-x:none;
+    }
+    .panel-viewer canvas, .panel-viewer img {
+      display:block; width:auto; height:auto; max-width:100vw; max-height:100dvh;
+      object-fit:contain; background:#fff; user-select:none; -webkit-user-select:none;
+    }
+    .panel-viewer-loading, .panel-viewer-error {
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      padding:2rem; color:#fff7dd; text-align:center;
+      font:600 1rem/1.5 system-ui,sans-serif;
+    }
+    .panel-viewer-error { display:none; }
+    .panel-viewer.failed .panel-viewer-loading { display:none; }
+    .panel-viewer.failed .panel-viewer-error { display:flex; }
+    .panel-viewer.ready .panel-viewer-loading, .panel-viewer.ready .panel-viewer-error { display:none; }
+    .viewer-hint {
+      position:fixed; left:50%; bottom:max(.8rem,env(safe-area-inset-bottom));
+      transform:translateX(-50%); z-index:20002; pointer-events:none;
+      max-width:calc(100vw - 2rem); padding:.5rem .8rem;
+      border:1px solid rgba(215,174,70,.75); border-radius:999px;
+      background:rgba(6,26,67,.86); color:#fff7dd;
+      font:600 .72rem/1.25 system-ui,sans-serif; text-align:center;
+    }
+    body.viewer-open { overflow:hidden; }
+    #exitDialog p { font:1rem/1.55 system-ui,sans-serif; }
+    .exit-actions { display:flex; justify-content:flex-end; gap:.6rem; margin-top:1rem; }
+    .exit-actions button { color:var(--navy); background:white; border-color:#bbc5d5; }
+    .exit-actions .confirm-exit { background:var(--navy); color:white; border-color:var(--navy); }
+
+
+    .reader-bar .controls, .reader-bar .nav-buttons, #pageSelect { box-sizing:border-box; }
+    @media (max-width:380px) {
+      .nav-buttons button { font-size:.58rem; letter-spacing:-.02em; }
+    }
+
     @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto !important; transition:none !important; } }
   </style>
 </head>
@@ -100,11 +146,20 @@
   <a class="skip" href="#reader">Skip to reader</a>
   <header>
     <div class="brand"><h1>MERCY</h1><p>Interactive Storybook · Shahir Anuar</p></div>
-    <div class="top-actions"><button id="tocButton" type="button" aria-haspopup="dialog">Contents</button><button id="readButton" type="button" disabled>Read aloud</button><button id="shareButton" type="button" aria-label="Share the current section">Share</button><button id="themeButton" type="button" aria-pressed="false">Night theme</button><button id="bookmarkButton" type="button" aria-pressed="false">Bookmark</button></div>
+    <div class="top-actions"><button id="readButton" type="button" disabled>Read aloud</button><button id="shareButton" type="button" aria-label="Share the current section">Share</button><button id="themeButton" type="button" aria-pressed="false">Night theme</button><button id="bookmarkButton" type="button" aria-pressed="false">Bookmark</button></div>
   </header>
   <main id="reader" tabindex="-1">
     <section class="reader-bar" aria-label="Reader controls">
-      <div class="controls"><button id="firstButton" type="button" aria-label="First section">First</button><button id="previousButton" type="button" aria-label="Previous section">← Previous</button><label class="sr-only" for="pageSelect">Select section</label><select id="pageSelect"></select><button id="nextButton" type="button" aria-label="Next section">Next →</button><button id="lastButton" type="button" aria-label="Last section">Last</button></div>
+      <div class="controls">
+        <div class="nav-buttons">
+          <button id="firstButton" type="button" aria-label="First section">First</button>
+          <button id="previousButton" type="button" aria-label="Previous section">← Previous</button>
+          <button id="nextButton" type="button" aria-label="Next section">Next →</button>
+          <button id="lastButton" type="button" aria-label="Last section">Last</button>
+        </div>
+        <label class="sr-only" for="pageSelect">Select section</label>
+        <select id="pageSelect"></select>
+      </div>
       <div class="progress" id="progressText" aria-live="polite"></div>
     </section>
     <div class="progress-bar" aria-hidden="true"><span id="progressFill"></span></div>
@@ -139,7 +194,24 @@
   </main>
   <footer>Use the arrow keys to move through the book. Pages appear automatically while each original PDF is preserved.</footer>
   <div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
-  <dialog id="tocDialog" aria-labelledby="tocTitle"><button class="dialog-close" id="tocClose" type="button">Close</button><h2 id="tocTitle">MERCY contents</h2><div class="toc" id="tocList"></div></dialog>
+<div id="panelViewer" class="panel-viewer" hidden aria-modal="true" role="dialog" aria-label="Full-screen book page">
+    <div id="panelViewerStage" class="panel-viewer-stage">
+      <div class="panel-viewer-loading" role="status">Loading page…</div>
+      <canvas id="panelViewerCanvas" role="img"></canvas>
+      <img id="panelViewerImage" alt="" hidden>
+      <div class="panel-viewer-error" role="alert">This page could not be displayed.</div>
+    </div>
+    <div class="viewer-hint">Swipe left or right to turn the page · Press Back once to close</div>
+  </div>
+  <dialog id="exitDialog" aria-labelledby="exitTitle">
+    <h2 id="exitTitle">Leave MERCY?</h2>
+    <p>Are you sure you want to quit the storybook?</p>
+    <p>Thank you, and have a nice day.</p>
+    <div class="exit-actions">
+      <button id="stayButton" type="button">Stay</button>
+      <button id="exitButton" class="confirm-exit" type="button">Exit</button>
+    </div>
+  </dialog>
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script>
   (() => {
@@ -254,7 +326,7 @@
       bookmarks: JSON.parse(localStorage.getItem('mercy-reader-bookmarks') || '[]')
     };
     if (state.index < 0 || state.index >= pages.length) state.index = 0;
-    const selector = $('pageSelect'), toc = $('tocList'), spread = $('spread');
+    const selector = $('pageSelect'), spread = $('spread');
     const shareToast = $('shareToast');
     let shareToastTimer = 0;
     function showShareMessage(message) {
@@ -267,6 +339,7 @@
     function currentShareUrl() {
       const url = new URL(window.location.href);
       url.searchParams.set('section', String(state.index + 1));
+      url.searchParams.delete('panel');
       return url.toString();
     }
     async function shareCurrentSection() {
@@ -340,43 +413,193 @@
       wrap.setAttribute('aria-label', `${action} ${wrap.dataset.label}${suffix}`);
       wrap.title = active ? 'Exit full screen' : `Open ${wrap.dataset.label} in full screen`;
     }
-    async function togglePageFullscreen(wrap) {
-      if (document.fullscreenElement === wrap) {
-        await document.exitFullscreen();
-        return;
-      }
-      if (wrap.classList.contains('fullscreen-fallback')) {
-        wrap.classList.remove('fullscreen-fallback');
-        document.body.classList.remove('viewer-open');
-        setFullscreenLabel(wrap, false);
-        return;
-      }
+
+    const panelViewer = $('panelViewer');
+    const panelViewerCanvas = $('panelViewerCanvas');
+    const panelViewerImage = $('panelViewerImage');
+    const viewerState = { open:false, flatIndex:0, renderId:0, suppressClickUntil:0 };
+
+    function allPanels() {
+      const result = [];
+      pages.forEach((page, sectionIndex) => {
+        result.push({ sectionIndex, panelIndex:0, file:page.left, label:page.kind === 'spread' ? `${page.chapter}, illustration for page ${page.number}` : page.label });
+        if (page.kind === 'spread') {
+          result.push({ sectionIndex, panelIndex:1, file:page.right, label:`${page.chapter}, story text page ${page.number}` });
+        }
+      });
+      return result;
+    }
+
+    function panelFlatIndex(sectionIndex, panelIndex=0) {
+      return allPanels().findIndex(panel => panel.sectionIndex === sectionIndex && panel.panelIndex === panelIndex);
+    }
+
+    async function renderViewerPanel(panel) {
+      const renderId = ++viewerState.renderId;
+      panelViewer.classList.remove('ready','failed');
+      panelViewerCanvas.hidden = true;
+      panelViewerImage.hidden = true;
+      panelViewerCanvas.removeAttribute('style');
+      panelViewerImage.removeAttribute('src');
+      panelViewerImage.alt = panel.label;
+
       try {
-        if (document.fullscreenElement) await document.exitFullscreen();
-        if (wrap.requestFullscreen) {
-          await wrap.requestFullscreen();
+        if (/\.(png|jpe?g|webp|gif|avif)(?:[?#].*)?$/i.test(panel.file)) {
+          await new Promise((resolve, reject) => {
+            panelViewerImage.onload = resolve;
+            panelViewerImage.onerror = reject;
+            panelViewerImage.src = panel.file;
+          });
+          if (renderId !== viewerState.renderId) return;
+          panelViewerImage.hidden = false;
+          panelViewer.classList.add('ready');
           return;
         }
+
+        if (!window.pdfjsLib) throw new Error('PDF viewer is unavailable.');
+        const loadingTask = window.pdfjsLib.getDocument({ url:panel.file, rangeChunkSize:262144 });
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(1);
+        const base = page.getViewport({scale:1});
+        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        const maxCssWidth = Math.max(320, window.innerWidth);
+        const maxCssHeight = Math.max(320, window.innerHeight);
+        const cssScale = Math.min(maxCssWidth / base.width, maxCssHeight / base.height);
+        const viewport = page.getViewport({scale:cssScale * ratio});
+        panelViewerCanvas.width = Math.ceil(viewport.width);
+        panelViewerCanvas.height = Math.ceil(viewport.height);
+        panelViewerCanvas.style.width = `${Math.round(viewport.width / ratio)}px`;
+        panelViewerCanvas.style.height = `${Math.round(viewport.height / ratio)}px`;
+        await page.render({canvasContext:panelViewerCanvas.getContext('2d',{alpha:false}), viewport}).promise;
+        await pdf.destroy();
+        if (renderId !== viewerState.renderId) return;
+        panelViewerCanvas.setAttribute('aria-label', panel.label);
+        panelViewerCanvas.hidden = false;
+        panelViewer.classList.add('ready');
       } catch (error) {
-        console.warn('Native full screen was unavailable; using the full-screen viewer instead.', error);
+        console.error('Unable to render full-screen page.', error);
+        if (renderId === viewerState.renderId) panelViewer.classList.add('failed');
       }
-      wrap.classList.add('fullscreen-fallback');
-      document.body.classList.add('viewer-open');
-      setFullscreenLabel(wrap, true);
     }
+
+    function syncSectionToViewer(panel) {
+      if (state.index === panel.sectionIndex) return;
+      state.index = panel.sectionIndex;
+      update({historyMode:'none', scroll:false});
+    }
+
+    function showViewerFlatIndex(flatIndex, {historyMode='replace'} = {}) {
+      const panels = allPanels();
+      const bounded = Math.max(0, Math.min(panels.length - 1, flatIndex));
+      viewerState.flatIndex = bounded;
+      viewerState.open = true;
+      const panel = panels[bounded];
+      syncSectionToViewer(panel);
+      panelViewer.hidden = false;
+      document.body.classList.add('viewer-open');
+      renderViewerPanel(panel);
+
+      const url = new URL(window.location.href);
+      url.searchParams.set('section', String(panel.sectionIndex + 1));
+      url.searchParams.set('panel', String(panel.panelIndex + 1));
+      const historyData = {viewer:true, section:panel.sectionIndex + 1, panel:panel.panelIndex + 1};
+      if (historyMode === 'push') history.pushState(historyData, '', url);
+      else if (historyMode === 'replace') history.replaceState(historyData, '', url);
+    }
+
+    function openPageViewer(wrap) {
+      const sectionIndex = Number(wrap.dataset.sectionIndex ?? state.index);
+      const panelIndex = Number(wrap.dataset.panelIndex ?? 0);
+      const index = panelFlatIndex(sectionIndex, panelIndex);
+      showViewerFlatIndex(index < 0 ? 0 : index, {historyMode:'push'});
+    }
+
+    function closePageViewer({fromHistory=false} = {}) {
+      if (!viewerState.open) return;
+      viewerState.open = false;
+      viewerState.renderId += 1;
+      panelViewer.hidden = true;
+      panelViewer.classList.remove('ready','failed');
+      document.body.classList.remove('viewer-open');
+      panelViewerCanvas.hidden = true;
+      panelViewerImage.hidden = true;
+      if (!fromHistory && history.state?.viewer) history.back();
+    }
+
+    function moveViewer(amount) {
+      if (!viewerState.open) return;
+      const panels = allPanels();
+      const next = Math.max(0, Math.min(panels.length - 1, viewerState.flatIndex + amount));
+      if (next === viewerState.flatIndex) return;
+      showViewerFlatIndex(next, {historyMode:'replace'});
+    }
+
     function enableFullscreenPages() {
-      spread.querySelectorAll('.pdf-canvas-wrap').forEach(wrap => {
+      spread.querySelectorAll('.pdf-canvas-wrap').forEach((wrap, panelIndex) => {
+        wrap.dataset.sectionIndex = String(state.index);
+        wrap.dataset.panelIndex = String(panelIndex);
         wrap.addEventListener('click', event => {
           if (event.target.closest('a')) return;
-          togglePageFullscreen(wrap);
+          openPageViewer(wrap);
         });
         wrap.addEventListener('keydown', event => {
           if (event.key !== 'Enter' && event.key !== ' ') return;
           event.preventDefault();
-          togglePageFullscreen(wrap);
+          openPageViewer(wrap);
         });
       });
     }
+
+    let viewerTouchX = 0;
+    let viewerTouchY = 0;
+    let viewerTouching = false;
+    panelViewer.addEventListener('touchstart', event => {
+      if (event.touches.length !== 1) {
+        viewerTouching = false;
+        return;
+      }
+      viewerTouchX = event.touches[0].clientX;
+      viewerTouchY = event.touches[0].clientY;
+      viewerTouching = true;
+    }, {passive:true});
+
+    panelViewer.addEventListener('touchend', event => {
+      if (!viewerTouching || event.changedTouches.length !== 1) return;
+      viewerTouching = false;
+      const dx = event.changedTouches[0].clientX - viewerTouchX;
+      const dy = event.changedTouches[0].clientY - viewerTouchY;
+      if (Math.abs(dx) < 42 || Math.abs(dx) <= Math.abs(dy) * 1.15) return;
+      viewerState.suppressClickUntil = Date.now() + 450;
+      if (dx < 0) moveViewer(1);
+      else moveViewer(-1);
+    }, {passive:true});
+
+    let viewerPointerX = 0;
+    let viewerPointerY = 0;
+    let viewerPointerActive = false;
+
+    panelViewer.addEventListener('pointerdown', event => {
+      if (!viewerState.open || event.pointerType === 'mouse' && event.button !== 0) return;
+      viewerPointerX = event.clientX;
+      viewerPointerY = event.clientY;
+      viewerPointerActive = true;
+      panelViewer.setPointerCapture?.(event.pointerId);
+    });
+
+    panelViewer.addEventListener('pointerup', event => {
+      if (!viewerPointerActive || !viewerState.open) return;
+      viewerPointerActive = false;
+      const dx = event.clientX - viewerPointerX;
+      const dy = event.clientY - viewerPointerY;
+      if (Math.abs(dx) < 42 || Math.abs(dx) <= Math.abs(dy) * 1.15) return;
+      viewerState.suppressClickUntil = Date.now() + 450;
+      if (dx < 0) moveViewer(1);
+      else moveViewer(-1);
+    });
+
+    panelViewer.addEventListener('pointercancel', () => {
+      viewerPointerActive = false;
+    });
 
     const speechEngine = 'speechSynthesis' in window ? window.speechSynthesis : null;
     const tts = { session:0, chunks:[], chunkIndex:0, pageIndex:null, active:false, paused:false, voices:[] };
@@ -571,49 +794,58 @@
       setTtsControls();
     }
 
-    function update() {
+    function update({historyMode='replace', scroll=false} = {}) {
       stopReading(false);
       const p = pages[state.index];
       spread.className = `spread ${p.kind === 'single' ? 'single' : ''}`;
-      spread.innerHTML = p.kind === 'single' ? pdfPanel(p.left, p.label) : pdfPanel(p.left, `${p.chapter}, illustration for page ${p.number}`) + pdfPanel(p.right, `${p.chapter}, story text page ${p.number}`, false);
-      const captionGuide = p.kind === 'single'
-        ? '<span>You are worthy. Seek help sincerely, Allah SWT will answer.</span>'
-        : '<span class="desktop-layout">Illustration on the left · story text on the right</span><span class="mobile-layout">Illustration on the top · story text on the bottom</span>';
-      $('caption').innerHTML = `<strong>${safe(p.label)}</strong>${captionGuide}`;
+      spread.innerHTML = p.kind === 'single'
+        ? pdfPanel(p.left, p.label, false)
+        : pdfPanel(p.left, `${p.chapter}, illustration for page ${p.number}`, false) + pdfPanel(p.right, `${p.chapter}, story text page ${p.number}`, false);
+      $('caption').textContent = 'You are worthy. You were chosen. Ask sincerely, and He will answer.';
       selector.value = state.index;
       $('progressText').textContent = `Section ${state.index + 1} of ${pages.length}`;
       $('progressFill').style.width = `${((state.index + 1) / pages.length) * 100}%`;
       $('previousButton').disabled = $('firstButton').disabled = state.index === 0;
       $('nextButton').disabled = $('lastButton').disabled = state.index === pages.length - 1;
       const marked = state.bookmarks.includes(state.index);
-      $('bookmarkButton').setAttribute('aria-pressed', marked); $('bookmarkButton').textContent = marked ? 'Bookmarked' : 'Bookmark';
-      [...toc.children].forEach((b,i)=>b.classList.toggle('current',i===state.index));
+      $('bookmarkButton').setAttribute('aria-pressed', marked);
+      $('bookmarkButton').textContent = marked ? 'Bookmarked' : 'Bookmark';
       localStorage.setItem('mercy-reader-position', state.index);
+
       const sectionUrl = new URL(window.location.href);
       sectionUrl.searchParams.set('section', String(state.index + 1));
-      history.replaceState({ section: state.index + 1 }, '', sectionUrl);
+      sectionUrl.searchParams.delete('panel');
+      const data = {section:state.index + 1};
+      if (historyMode === 'push') history.pushState(data, '', sectionUrl);
+      else if (historyMode === 'replace') history.replaceState(data, '', sectionUrl);
+
       enableFullscreenPages();
       renderVisiblePdfs();
       setTtsControls();
+      if (scroll) $('reader').scrollIntoView({block:'start'});
     }
-    pages.forEach((p,i)=> { const opt=document.createElement('option'); opt.value=i; opt.textContent=p.label; selector.append(opt); const b=document.createElement('button'); b.type='button'; b.textContent=`${i+1}. ${p.label}`; b.addEventListener('click',()=>{state.index=i; update(); $('tocDialog').close(); $('reader').focus();}); toc.append(b); });
-    function move(amount) { state.index=Math.max(0,Math.min(pages.length-1,state.index+amount)); update(); $('reader').scrollIntoView({block:'start'}); }
-    $('firstButton').onclick=()=>{state.index=0;update()}; $('lastButton').onclick=()=>{state.index=pages.length-1;update()}; $('previousButton').onclick=()=>move(-1); $('nextButton').onclick=()=>move(1); selector.onchange=()=>{state.index=Number(selector.value);update()};
-    $('tocButton').onclick=()=>$('tocDialog').showModal(); $('tocClose').onclick=()=>$('tocDialog').close();
+    pages.forEach((p,i)=> {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${i + 1}. ${p.label}`;
+      selector.append(opt);
+    });
+
+    function move(amount) {
+      const next = Math.max(0,Math.min(pages.length-1,state.index+amount));
+      if (next === state.index) return;
+      state.index=next;
+      update({historyMode:'push',scroll:true});
+    }
+    $('firstButton').onclick=()=>{if(state.index!==0){state.index=0;update({historyMode:'push',scroll:true})}};
+    $('lastButton').onclick=()=>{if(state.index!==pages.length-1){state.index=pages.length-1;update({historyMode:'push',scroll:true})}};
+    $('previousButton').onclick=()=>move(-1);
+    $('nextButton').onclick=()=>move(1);
+    selector.onchange=()=>{const next=Number(selector.value);if(next!==state.index){state.index=next;update({historyMode:'push'})}};
+     
     $('shareButton').addEventListener('click', shareCurrentSection);
     $('bookmarkButton').onclick=()=>{const i=state.bookmarks.indexOf(state.index); i<0?state.bookmarks.push(state.index):state.bookmarks.splice(i,1); localStorage.setItem('mercy-reader-bookmarks',JSON.stringify(state.bookmarks));update()};
     $('themeButton').onclick=()=>{const night=document.body.classList.toggle('night'); $('themeButton').setAttribute('aria-pressed',night); $('themeButton').textContent=night?'Day theme':'Night theme'; localStorage.setItem('mercy-reader-theme',night?'night':'day')};
-    document.addEventListener('fullscreenchange',()=>{
-      document.querySelectorAll('.pdf-canvas-wrap').forEach(wrap => setFullscreenLabel(wrap, document.fullscreenElement === wrap));
-    });
-    document.addEventListener('keydown',event=>{
-      if(event.key !== 'Escape') return;
-      const fallback = document.querySelector('.pdf-canvas-wrap.fullscreen-fallback');
-      if(!fallback) return;
-      fallback.classList.remove('fullscreen-fallback');
-      document.body.classList.remove('viewer-open');
-      setFullscreenLabel(fallback, false);
-    });
     readButton.addEventListener('click', startReading);
     ttsPlayButton.addEventListener('click', startReading);
     ttsPauseButton.addEventListener('click', togglePauseReading);
@@ -630,15 +862,82 @@
       window.setTimeout(loadVoices, 1000);
     }
     window.addEventListener('beforeunload', () => speechEngine?.cancel());
-    window.addEventListener('popstate', () => {
-      const section = Number(new URLSearchParams(window.location.search).get('section'));
-      if (!Number.isInteger(section) || section < 1 || section > pages.length) return;
-      state.index = section - 1;
-      update();
+    let exitArmedUntil = 0;
+    let allowingExit = false;
+
+    function armExitGuard() {
+      const now = Date.now();
+      if (now < exitArmedUntil) {
+        $('exitDialog').showModal();
+        history.pushState({guard:true, section:state.index + 1}, '', currentShareUrl());
+        return;
+      }
+      exitArmedUntil = now + 2200;
+      showShareMessage('Press Back again if you would like to leave MERCY.');
+      history.pushState({guard:true, section:state.index + 1}, '', currentShareUrl());
+    }
+
+    window.addEventListener('popstate', event => {
+      if (allowingExit) return;
+
+      if (viewerState.open && !event.state?.viewer) {
+        closePageViewer({fromHistory:true});
+        const section = Number(event.state?.section || new URLSearchParams(window.location.search).get('section'));
+        if (Number.isInteger(section) && section >= 1 && section <= pages.length) {
+          state.index = section - 1;
+          update({historyMode:'none'});
+        }
+        return;
+      }
+
+      if (event.state?.viewer) {
+        const sectionIndex = Math.max(0, Number(event.state.section || 1) - 1);
+        const panelIndex = Math.max(0, Number(event.state.panel || 1) - 1);
+        showViewerFlatIndex(panelFlatIndex(sectionIndex,panelIndex), {historyMode:'none'});
+        return;
+      }
+
+      if (event.state?.appRoot) {
+        armExitGuard();
+        return;
+      }
+
+      const section = Number(event.state?.section || new URLSearchParams(window.location.search).get('section'));
+      if (Number.isInteger(section) && section >= 1 && section <= pages.length) {
+        state.index = section - 1;
+        update({historyMode:'none'});
+      }
+    });
+
+    $('stayButton').addEventListener('click', () => {
+      $('exitDialog').close();
+      exitArmedUntil = 0;
+    });
+    $('exitButton').addEventListener('click', () => {
+      $('exitDialog').close();
+      allowingExit = true;
+      history.back();
     });
     if(localStorage.getItem('mercy-reader-theme')==='night') $('themeButton').click();
-    document.addEventListener('keydown',e=>{if(e.target.matches('select,button')||$('tocDialog').open)return; if(e.key==='ArrowLeft') move(-1); if(e.key==='ArrowRight') move(1);});
-    update();
+
+    const initialUrl = new URL(window.location.href);
+    initialUrl.searchParams.set('section', String(state.index + 1));
+    initialUrl.searchParams.delete('panel');
+    history.replaceState({appRoot:true, section:state.index + 1}, '', initialUrl);
+    history.pushState({guard:true, section:state.index + 1}, '', initialUrl);
+
+    document.addEventListener('keydown',e=>{
+      if (viewerState.open) {
+        if (e.key === 'ArrowLeft') { e.preventDefault(); moveViewer(-1); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); moveViewer(1); }
+        else if (e.key === 'Escape') { e.preventDefault(); closePageViewer(); }
+        return;
+      }
+      if(e.target.matches('select,button'))return;
+      if(e.key==='ArrowLeft') move(-1);
+      if(e.key==='ArrowRight') move(1);
+    });
+    update({historyMode:'none'});
   })();
   </script>
 </body>
