@@ -320,7 +320,7 @@
       bookmarks: JSON.parse(localStorage.getItem('mercy-reader-bookmarks') || '[]')
     };
     if (state.index < 0 || state.index >= pages.length) state.index = 0;
-    const selector = $('pageSelect'), toc = $('tocList'), spread = $('spread');
+    const selector = $('pageSelect'), spread = $('spread');
     const shareToast = $('shareToast');
     let shareToastTimer = 0;
     function showShareMessage(message) {
@@ -776,7 +776,6 @@
       const marked = state.bookmarks.includes(state.index);
       $('bookmarkButton').setAttribute('aria-pressed', marked);
       $('bookmarkButton').textContent = marked ? 'Bookmarked' : 'Bookmark';
-      [...toc.children].forEach((b,i)=>b.classList.toggle('current',i===state.index));
       localStorage.setItem('mercy-reader-position', state.index);
 
       const sectionUrl = new URL(window.location.href);
@@ -796,16 +795,6 @@
       opt.value=i;
       opt.textContent=p.label;
       selector.append(opt);
-      const b=document.createElement('button');
-      b.type='button';
-      b.textContent=`${i+1}. ${p.label}`;
-      b.addEventListener('click',()=>{
-        state.index=i;
-        update({historyMode:'push'});
-        
-        $('reader').focus();
-      });
-      toc.append(b);
     });
     function move(amount) {
       const next = Math.max(0,Math.min(pages.length-1,state.index+amount));
