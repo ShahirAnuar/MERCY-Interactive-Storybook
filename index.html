@@ -34,8 +34,15 @@
     .page { position:relative; min-height:65vh; padding:clamp(.4rem,1vw,.9rem); background:#101b30; border-right:1px solid rgba(215,174,70,.55); }
     .page:last-child { border-right:0; }
     .page .page-label { position:absolute; left:.9rem; bottom:.75rem; color:white; background:rgba(0,0,0,.65); font-family:system-ui,sans-serif; font-size:.75rem; border-radius:.25rem; padding:.25rem .45rem; z-index:1; }
-    object { display:block; width:100%; height:calc(100vh - 17rem); min-height:62vh; border:0; background:#fff; }
-    object a { color:#06235b; display:block; padding:2rem; }
+    .pdf-canvas-wrap { width:100%; min-height:62vh; display:flex; align-items:flex-start; justify-content:center; background:#202020; overflow:hidden; }
+    .pdf-canvas-wrap canvas { display:none; width:100%; height:auto; background:#fff; box-shadow:0 2px 18px rgba(0,0,0,.28); touch-action:pinch-zoom; }
+    .pdf-canvas-wrap.ready canvas { display:block; }
+    .pdf-loading, .pdf-error { width:100%; min-height:62vh; display:flex; align-items:center; justify-content:center; padding:2rem; text-align:center; color:#edf2ff; font:600 .95rem/1.5 system-ui,sans-serif; }
+    .pdf-error { display:none; flex-direction:column; gap:.8rem; }
+    .pdf-canvas-wrap.failed .pdf-loading { display:none; }
+    .pdf-canvas-wrap.failed .pdf-error { display:flex; }
+    .pdf-canvas-wrap.ready .pdf-loading, .pdf-canvas-wrap.ready .pdf-error { display:none; }
+    .pdf-error a { color:#f5d77e; }
     .caption { background:rgba(255,253,247,.96); padding:1rem 1.2rem; border-radius:0 0 .8rem .8rem; border:1px solid var(--line); border-top:0; min-height:3.8rem; color:var(--navy); }
     .caption strong { color:#8b650e; }
     .caption span { font-family:system-ui,sans-serif; font-size:.86rem; color:var(--muted); margin-left:.4rem; }
@@ -53,7 +60,7 @@
     body.night .reader-bar, body.night .caption { background:#121b2a; color:#edf2ff; border-color:#765d22; }
     body.night .controls button, body.night .controls select { background:#202d42; color:#eef4ff; border-color:#566983; }
     body.night .progress-bar { background:#314057; }
-    @media (max-width:760px) { header { align-items:flex-start; flex-direction:column; } .reader-bar { align-items:stretch; flex-direction:column; } .progress { text-align:right; } .spread { grid-template-columns:1fr; } .spread.single { max-width:none; } .page { min-height:47vh; border-right:0; border-bottom:1px solid rgba(215,174,70,.55); } .page:last-child { border-bottom:0; } object { min-height:45vh; height:62vh; } #pageSelect { max-width:100%; flex:1; } }
+    @media (max-width:760px) { header { align-items:flex-start; flex-direction:column; } .reader-bar { align-items:stretch; flex-direction:column; } .progress { text-align:right; } .spread { grid-template-columns:1fr; } .spread.single { max-width:none; } .page { min-height:47vh; border-right:0; border-bottom:1px solid rgba(215,174,70,.55); } .page:last-child { border-bottom:0; } .pdf-canvas-wrap, .pdf-loading, .pdf-error { min-height:45vh; } #pageSelect { max-width:100%; flex:1; } }
     @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto !important; transition:none !important; } }
   </style>
 </head>
@@ -72,10 +79,14 @@
     <section id="spread" class="spread" aria-label="Current storybook pages"></section>
     <div class="caption" id="caption"></div>
   </main>
-  <footer>Use the arrow keys to move through the book. Each original PDF page is preserved exactly as uploaded.</footer>
+  <footer>Use the arrow keys to move through the book. Pages appear automatically while each original PDF is preserved.</footer>
   <dialog id="tocDialog" aria-labelledby="tocTitle"><button class="dialog-close" id="tocClose" type="button">Close</button><h2 id="tocTitle">MERCY contents</h2><div class="toc" id="tocList"></div></dialog>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script>
   (() => {
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+    }
     const asset = n => n;
     const single = (file, label, chapter='Front matter') => ({kind:'single', left:asset(file), label, chapter});
     const pair = (image, text, number, chapter) => ({kind:'spread', left:asset(image), right:asset(text), label:`${chapter} · Page ${number}`, chapter, number});
@@ -137,7 +148,44 @@
     if (state.index < 0 || state.index >= pages.length) state.index = 0;
     const selector = $('pageSelect'), toc = $('tocList'), spread = $('spread');
     function safe(text) { const el=document.createElement('span'); el.textContent=text; return el.innerHTML; }
-    function pdfPanel(file, label) { return `<article class="page" aria-label="${safe(label)}"><object data="${encodeURI(file)}#view=FitH" type="application/pdf" aria-label="${safe(label)}"><a href="${encodeURI(file)}" target="_blank" rel="noopener">Open ${safe(label)} PDF</a></object><span class="page-label">${safe(label)}</span></article>`; }
+    let renderToken = 0;
+    function pdfPanel(file, label) {
+      return `<article class="page" aria-label="${safe(label)}"><div class="pdf-canvas-wrap" data-pdf="${safe(file)}" data-label="${safe(label)}"><div class="pdf-loading" role="status">Loading ${safe(label)}…</div><canvas role="img" aria-label="${safe(label)}"></canvas><div class="pdf-error" role="alert"><span>This page could not be displayed.</span><a href="${encodeURI(file)}" target="_blank" rel="noopener">Open ${safe(label)} PDF</a></div></div><span class="page-label">${safe(label)}</span></article>`;
+    }
+    async function renderPdfPanel(wrap, token) {
+      if (!window.pdfjsLib) {
+        wrap.classList.add('failed');
+        return;
+      }
+      const file = wrap.dataset.pdf;
+      const canvas = wrap.querySelector('canvas');
+      try {
+        const loadingTask = window.pdfjsLib.getDocument({ url: file, rangeChunkSize: 262144 });
+        const pdf = await loadingTask.promise;
+        if (token !== renderToken || !wrap.isConnected) { await pdf.destroy(); return; }
+        const page = await pdf.getPage(1);
+        const baseViewport = page.getViewport({ scale: 1 });
+        const cssWidth = Math.max(280, wrap.clientWidth || 720);
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+        const scale = (cssWidth * pixelRatio) / baseViewport.width;
+        const viewport = page.getViewport({ scale });
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        canvas.style.width = `${cssWidth}px`;
+        canvas.style.height = 'auto';
+        await page.render({ canvasContext: canvas.getContext('2d', { alpha: false }), viewport }).promise;
+        if (token !== renderToken || !wrap.isConnected) { await pdf.destroy(); return; }
+        wrap.classList.add('ready');
+        await pdf.destroy();
+      } catch (error) {
+        if (token === renderToken && wrap.isConnected) wrap.classList.add('failed');
+        console.error(`Unable to render ${file}`, error);
+      }
+    }
+    function renderVisiblePdfs() {
+      const token = ++renderToken;
+      spread.querySelectorAll('.pdf-canvas-wrap').forEach(wrap => renderPdfPanel(wrap, token));
+    }
     function update() {
       const p = pages[state.index];
       spread.className = `spread ${p.kind === 'single' ? 'single' : ''}`;
@@ -152,6 +200,7 @@
       $('bookmarkButton').setAttribute('aria-pressed', marked); $('bookmarkButton').textContent = marked ? 'Bookmarked' : 'Bookmark';
       [...toc.children].forEach((b,i)=>b.classList.toggle('current',i===state.index));
       localStorage.setItem('mercy-reader-position', state.index);
+      renderVisiblePdfs();
     }
     pages.forEach((p,i)=> { const opt=document.createElement('option'); opt.value=i; opt.textContent=`${i+1}. ${p.label}`; selector.append(opt); const b=document.createElement('button'); b.type='button'; b.textContent=`${i+1}. ${p.label}`; b.addEventListener('click',()=>{state.index=i; update(); $('tocDialog').close(); $('reader').focus();}); toc.append(b); });
     function move(amount) { state.index=Math.max(0,Math.min(pages.length-1,state.index+amount)); update(); $('reader').scrollIntoView({block:'start'}); }
