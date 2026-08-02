@@ -17,15 +17,20 @@
     .brand h1 { margin:0; letter-spacing:.16em; font-size:clamp(1.25rem,3vw,2rem); color:#f5d77e; }
     .brand p { margin:.25rem 0 0; font-family:system-ui,sans-serif; font-size:.76rem; opacity:.86; }
     .top-actions, .controls { display:flex; flex-wrap:wrap; gap:.55rem; align-items:center; }
+    .top-actions { flex-wrap:nowrap; white-space:nowrap; }
+    .top-actions button { flex:0 0 auto; white-space:nowrap; }
+    #spread { touch-action:pan-y pinch-zoom; user-select:none; -webkit-user-select:none; }
     button, select { border:1px solid rgba(255,255,255,.35); border-radius:.5rem; background:rgba(255,255,255,.1); color:inherit; min-height:2.5rem; padding:.45rem .75rem; cursor:pointer; }
     button:hover { background:rgba(255,255,255,.2); }
     button:focus-visible, select:focus-visible, a:focus-visible { outline:3px solid #ffd667; outline-offset:3px; }
     main { max-width:1580px; padding:clamp(1rem,2.5vw,2.3rem); margin:auto; }
     .reader-bar { border:1px solid var(--line); background:rgba(255,253,247,.9); box-shadow:var(--shadow); padding:.8rem; border-radius:.8rem .8rem 0 0; display:flex; gap:.75rem; align-items:center; justify-content:space-between; }
-    .controls { color:var(--navy); }
+    .controls { color:var(--navy); display:grid; grid-template-columns:minmax(0,1fr); gap:.55rem; width:min(100%,46rem); }
+    .nav-buttons { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.45rem; width:100%; }
     .controls button, .controls select { border-color:#bbc5d5; background:white; color:var(--navy); }
     .controls button[disabled] { opacity:.5; cursor:not-allowed; }
-    #pageSelect { max-width:min(51vw,25rem); }
+    .nav-buttons button { min-width:0; white-space:nowrap; }
+    #pageSelect { max-width:none; width:100%; min-width:0; }
     .progress { font-family:system-ui,sans-serif; font-size:.83rem; color:var(--muted); white-space:nowrap; }
     .progress-bar { height:.35rem; background:#ded5bd; border-radius:99px; overflow:hidden; margin:.65rem .8rem 0; }
     .progress-bar span { display:block; height:100%; background:var(--gold); transition:width .18s ease; }
@@ -41,13 +46,31 @@
     .pdf-canvas-wrap:fullscreen, .pdf-canvas-wrap.fullscreen-fallback { position:fixed; inset:0; z-index:9999; width:100vw; height:100vh; min-height:100vh; padding:0; background:#000; align-items:center; justify-content:center; overflow:auto; cursor:zoom-out; }
     .pdf-canvas-wrap:fullscreen canvas, .pdf-canvas-wrap.fullscreen-fallback canvas { width:auto !important; height:auto !important; max-width:100vw; max-height:100vh; object-fit:contain; cursor:zoom-out; }
     body.viewer-open { overflow:hidden; }
+    .pdf-canvas-wrap.fullscreen-fallback::after {
+      content:'Swipe left or right to turn the page · Tap to close';
+      position:fixed;
+      left:50%;
+      bottom:max(1rem,env(safe-area-inset-bottom));
+      transform:translateX(-50%);
+      z-index:10001;
+      max-width:calc(100vw - 2rem);
+      padding:.55rem .85rem;
+      border:1px solid rgba(215,174,70,.75);
+      border-radius:999px;
+      background:rgba(6,26,67,.88);
+      color:#fff7dd;
+      font:600 .75rem/1.25 system-ui,sans-serif;
+      text-align:center;
+      pointer-events:none;
+      opacity:.92;
+    }
     .pdf-loading, .pdf-error { width:100%; min-height:62vh; display:flex; align-items:center; justify-content:center; padding:2rem; text-align:center; color:#edf2ff; font:600 .95rem/1.5 system-ui,sans-serif; }
     .pdf-error { display:none; flex-direction:column; gap:.8rem; }
     .pdf-canvas-wrap.failed .pdf-loading { display:none; }
     .pdf-canvas-wrap.failed .pdf-error { display:flex; }
     .pdf-canvas-wrap.ready .pdf-loading, .pdf-canvas-wrap.ready .pdf-error { display:none; }
     .pdf-error a { color:#f5d77e; }
-    .caption { background:rgba(255,253,247,.96); padding:1rem 1.2rem; border-radius:0 0 .8rem .8rem; border:1px solid var(--line); border-top:0; min-height:3.8rem; color:var(--navy); }
+    .caption { background:rgba(255,253,247,.96); padding:1rem 1.2rem; border-radius:0 0 .8rem .8rem; border:1px solid var(--line); border-top:0; min-height:3.8rem; color:var(--navy); text-align:center; display:flex; align-items:center; justify-content:center; }
     .caption strong { color:#8b650e; }
     .caption span { font-family:system-ui,sans-serif; font-size:.86rem; color:var(--muted); margin-left:.4rem; }
     .caption .mobile-layout { display:none; }
@@ -89,8 +112,19 @@
     body.night .tts-actions button, body.night .tts-panel select { background:#202d42; color:#eef4ff; border-color:#566983; }
     body.night .tts-field, body.night .tts-auto, body.night .tts-status { color:#c6cfe0; }
     body.night .transcript summary { color:#ffe08a; }
+    .share-toast { position:fixed; left:50%; bottom:1.25rem; transform:translate(-50%,1rem); z-index:10000; max-width:min(92vw,32rem); padding:.75rem 1rem; border:1px solid var(--gold); border-radius:.65rem; background:#061a43; color:#fff7dd; box-shadow:var(--shadow); font:600 .86rem/1.35 system-ui,sans-serif; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; text-align:center; }
+    .share-toast.show { opacity:1; transform:translate(-50%,0); }
 
-    @media (max-width:760px) { .tts-panel { grid-template-columns:1fr 1fr; align-items:stretch; } .tts-actions { grid-column:1/-1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); } .tts-actions button { padding:.4rem .25rem; font-size:.8rem; } .tts-field select { width:100%; max-width:none; } .tts-auto { grid-column:1/-1; white-space:normal; } header { align-items:flex-start; flex-direction:column; } .reader-bar { align-items:stretch; flex-direction:column; } .controls { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.4rem; width:100%; } .controls button { min-width:0; padding:.4rem .15rem; font-size:clamp(.68rem,3.25vw,.82rem); white-space:nowrap; } #firstButton { grid-column:1; grid-row:1; } #previousButton { grid-column:2; grid-row:1; } #nextButton { grid-column:3; grid-row:1; } #lastButton { grid-column:4; grid-row:1; } #pageSelect { grid-column:1/-1; grid-row:2; max-width:none; width:100%; min-width:0; font-size:clamp(.74rem,3.5vw,.88rem); } .progress { display:none; } .spread { grid-template-columns:1fr; } .spread.single { max-width:none; } .page { min-height:47vh; border-right:0; border-bottom:1px solid rgba(215,174,70,.55); } .page:last-child { border-bottom:0; } .pdf-canvas-wrap, .pdf-loading, .pdf-error { min-height:45vh; } .caption .desktop-layout { display:none; } .caption .mobile-layout { display:inline; } }
+    @media (max-width:760px) { .top-actions { width:100%; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.35rem; } .top-actions button { min-width:0; padding:.4rem .2rem; font-size:clamp(.67rem,3.15vw,.82rem); } .tts-panel { grid-template-columns:1fr 1fr; align-items:stretch; } .tts-actions { grid-column:1/-1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); } .tts-actions button { padding:.4rem .25rem; font-size:.8rem; } .tts-field select { width:100%; max-width:none; } .tts-auto { grid-column:1/-1; white-space:normal; } header { align-items:flex-start; flex-direction:column; } .reader-bar { align-items:stretch; flex-direction:column; } .controls { display:grid; grid-template-columns:1fr; gap:.4rem; width:100%; } .nav-buttons { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.35rem; width:100%; } .nav-buttons button { min-width:0; padding:.4rem .12rem; font-size:clamp(.64rem,3vw,.8rem); white-space:nowrap; } #pageSelect { max-width:none; width:100%; min-width:0; font-size:clamp(.74rem,3.5vw,.88rem); } .progress { display:none; } .spread { grid-template-columns:1fr; } .spread.single { max-width:none; } .page { min-height:47vh; border-right:0; border-bottom:1px solid rgba(215,174,70,.55); } .page:last-child { border-bottom:0; } .pdf-canvas-wrap, .pdf-loading, .pdf-error { min-height:45vh; } .caption .desktop-layout { display:none; } .caption .mobile-layout { display:inline; } }
+
+    .share-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.55rem; clear:both; padding-top:.5rem; }
+    .share-options button, .share-options a { min-height:2.75rem; display:flex; align-items:center; justify-content:center; text-align:center; text-decoration:none; border:1px solid #c9b675; border-radius:.55rem; background:#fffaf0; color:var(--navy); padding:.55rem .65rem; font:600 .84rem/1.2 system-ui,sans-serif; cursor:pointer; }
+    .share-options button:hover, .share-options a:hover { background:#fff1bd; }
+    .share-note { margin:.9rem 0 0; color:var(--muted); font:.78rem/1.45 system-ui,sans-serif; }
+    body.night .share-options button, body.night .share-options a { background:#202d42; color:#fff4cf; border-color:#90732e; }
+    body.night .share-options button:hover, body.night .share-options a:hover { background:#2a3d5d; }
+    @media (max-width:460px) { .share-options { grid-template-columns:1fr; } }
+
     @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto !important; transition:none !important; } }
   </style>
 </head>
@@ -98,11 +132,20 @@
   <a class="skip" href="#reader">Skip to reader</a>
   <header>
     <div class="brand"><h1>MERCY</h1><p>Interactive Storybook · Shahir Anuar</p></div>
-    <div class="top-actions"><button id="tocButton" type="button" aria-haspopup="dialog">Contents</button><button id="readButton" type="button" disabled>Read aloud</button><button id="themeButton" type="button" aria-pressed="false">Night theme</button><button id="bookmarkButton" type="button" aria-pressed="false">Bookmark</button></div>
+    <div class="top-actions"><button id="readButton" type="button" disabled>Read aloud</button><button id="shareButton" type="button" aria-haspopup="dialog" aria-label="Share the current section">Share</button><button id="themeButton" type="button" aria-pressed="false">Night theme</button><button id="bookmarkButton" type="button" aria-pressed="false">Bookmark</button></div>
   </header>
   <main id="reader" tabindex="-1">
     <section class="reader-bar" aria-label="Reader controls">
-      <div class="controls"><button id="firstButton" type="button" aria-label="First section">First</button><button id="previousButton" type="button" aria-label="Previous section">← Previous</button><label class="sr-only" for="pageSelect">Select section</label><select id="pageSelect"></select><button id="nextButton" type="button" aria-label="Next section">Next →</button><button id="lastButton" type="button" aria-label="Last section">Last</button></div>
+      <div class="controls">
+        <div class="nav-buttons">
+          <button id="firstButton" type="button" aria-label="First section">First</button>
+          <button id="previousButton" type="button" aria-label="Previous section">← Previous</button>
+          <button id="nextButton" type="button" aria-label="Next section">Next →</button>
+          <button id="lastButton" type="button" aria-label="Last section">Last</button>
+        </div>
+        <label class="sr-only" for="pageSelect">Select section</label>
+        <select id="pageSelect"></select>
+      </div>
       <div class="progress" id="progressText" aria-live="polite"></div>
     </section>
     <div class="progress-bar" aria-hidden="true"><span id="progressFill"></span></div>
@@ -136,7 +179,24 @@
     </details>
   </main>
   <footer>Use the arrow keys to move through the book. Pages appear automatically while each original PDF is preserved.</footer>
+  <div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
   <dialog id="tocDialog" aria-labelledby="tocTitle"><button class="dialog-close" id="tocClose" type="button">Close</button><h2 id="tocTitle">MERCY contents</h2><div class="toc" id="tocList"></div></dialog>
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <button class="dialog-close" id="shareClose" type="button">Close</button>
+    <h2 id="shareTitle">Share this page</h2>
+    <div class="share-options">
+      <a id="shareWhatsApp" target="_blank" rel="noopener">WhatsApp</a>
+      <a id="shareFacebook" target="_blank" rel="noopener">Facebook</a>
+      <a id="shareMessenger">Messenger</a>
+      <a id="shareTelegram" target="_blank" rel="noopener">Telegram</a>
+      <a id="shareX" target="_blank" rel="noopener">X (Twitter)</a>
+      <button id="shareInstagram" type="button">Instagram</button>
+      <button id="shareDiscord" type="button">Discord</button>
+      <button id="shareMore" type="button">More: iMessage, AirDrop, Mail, Notes…</button>
+      <button id="shareCopy" type="button">Copy page link</button>
+    </div>
+    <p class="share-note">“More” opens your phone or computer’s system share sheet. Available apps depend on what is installed on the device.</p>
+  </dialog>
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script>
   (() => {
@@ -197,6 +257,7 @@
       pair('MERCY_85_84.image-38.pdf','MERCY_86_85.mercy-page-38.pdf',38,'Chapter 3 — MERCY'),
       single('MERCY_87_86.final-dua.pdf', 'Final dua', 'End matter'),
       single('MERCY_88_87.about-the-author.pdf', 'About the author', 'End matter'),
+      single('MERCY_89_89.support-page.pdf', 'Support Future Books', 'End matter'),
       single('MERCY_89_88.final-page.pdf', 'Final page', 'End matter'),
       single('MERCY_90_89.back-cover.pdf', 'Back cover', 'End matter')
     ];
@@ -241,14 +302,116 @@
       "38": "Khalid took a deep breath. “Do you know what happened after Iblis refused? He wanted to prove that Adam was unworthy.” Khalid looked into his son’s eyes. “Be careful, Zayd. Never let your goals become about proving other people wrong. Never study so someone else fails. Never worship so someone else looks smaller. Never ask Allah to lower another person.” “The moment you want someone else’s downfall… You have stepped onto the road Iblis chose.” “But the moment you ask Allah to make you better than yesterday… You are walking the road Adam chose.” “Last year, I asked you what you would wish for if Allah granted you one wish.” You said…you wished no one would ever have to feel what you feel.” Zayd smiled through tears. “When I was asked that question many years ago, I wished only for inner peace.” He placed his hand over Zayd’s. “I thought Allah sent me to guide you.” “But now I think…He sent you to guide me too.” We are all just souls, waiting to be returned one day to our Lord. May He accept our repentance, our struggles, and our love."
 };
     const $ = id => document.getElementById(id);
-    const state = { index: Number(localStorage.getItem('mercy-reader-position') || 0), bookmarks: JSON.parse(localStorage.getItem('mercy-reader-bookmarks') || '[]') };
+    const savedIndex = Number(localStorage.getItem('mercy-reader-position') || 0);
+    const requestedSection = Number(new URLSearchParams(window.location.search).get('section'));
+    const directIndex = Number.isInteger(requestedSection) && requestedSection >= 1 && requestedSection <= pages.length
+      ? requestedSection - 1
+      : null;
+    const state = {
+      index: directIndex ?? savedIndex,
+      bookmarks: JSON.parse(localStorage.getItem('mercy-reader-bookmarks') || '[]')
+    };
     if (state.index < 0 || state.index >= pages.length) state.index = 0;
     const selector = $('pageSelect'), toc = $('tocList'), spread = $('spread');
+    const shareToast = $('shareToast');
+    let shareToastTimer = 0;
+    function showShareMessage(message) {
+      if (!shareToast) return;
+      window.clearTimeout(shareToastTimer);
+      shareToast.textContent = message;
+      shareToast.classList.add('show');
+      shareToastTimer = window.setTimeout(() => shareToast.classList.remove('show'), 2600);
+    }
+    function currentShareUrl() {
+      const url = new URL(window.location.href);
+      url.searchParams.set('section', String(state.index + 1));
+      return url.toString();
+    }
+    function sharePayload() {
+      const current = pages[state.index];
+      return {
+        title: 'MERCY — Interactive Storybook',
+        text: `Read ${current.label} from MERCY by Shahir Anuar.`,
+        url: currentShareUrl()
+      };
+    }
+
+    async function copyShareLink(message='Link copied. You can now paste it into WhatsApp or social media.') {
+      const { url } = sharePayload();
+      try {
+        if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(url);
+        else window.prompt('Copy this link:', url);
+        showShareMessage(message);
+        return true;
+      } catch (error) {
+        console.error('Unable to copy the link.', error);
+        window.prompt('Copy this link:', url);
+        return false;
+      }
+    }
+
+    async function openSystemShare() {
+      const data = sharePayload();
+      try {
+        if (navigator.share) {
+          await navigator.share(data);
+          return;
+        }
+        await copyShareLink();
+      } catch (error) {
+        if (error?.name !== 'AbortError') {
+          console.error('Unable to share this section.', error);
+          await copyShareLink();
+        }
+      }
+    }
+
+    function prepareShareDialog() {
+      const data = sharePayload();
+      const url = encodeURIComponent(data.url);
+      const message = encodeURIComponent(`${data.text} ${data.url}`);
+
+      $('shareWhatsApp').href = `https://wa.me/?text=${message}`;
+      $('shareFacebook').href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+      $('shareTelegram').href = `https://t.me/share/url?url=${url}&text=${encodeURIComponent(data.text)}`;
+      $('shareX').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(data.text)}&url=${url}`;
+
+      // Messenger's mobile URL scheme works when the Messenger app is installed.
+      $('shareMessenger').href = `fb-messenger://share/?link=${url}`;
+      $('shareMessenger').onclick = async event => {
+        event.preventDefault();
+        await copyShareLink('Page link copied. Opening Messenger…');
+        window.location.href = `fb-messenger://share/?link=${url}`;
+        window.setTimeout(() => window.open('https://www.messenger.com/', '_blank', 'noopener'), 900);
+      };
+
+      // Instagram and Discord do not provide a dependable universal web link-sharing URL.
+      // Copy the exact page link, then open the app/site so the reader can paste it.
+      $('shareInstagram').onclick = async () => {
+        await copyShareLink('Page link copied. Paste it into Instagram.');
+        window.location.href = 'instagram://app';
+        window.setTimeout(() => window.open('https://www.instagram.com/', '_blank', 'noopener'), 900);
+      };
+      $('shareDiscord').onclick = async () => {
+        await copyShareLink('Page link copied. Paste it into Discord.');
+        window.location.href = 'discord://';
+        window.setTimeout(() => window.open('https://discord.com/app', '_blank', 'noopener'), 900);
+      };
+      $('shareMore').onclick = openSystemShare;
+      $('shareCopy').onclick = () => copyShareLink();
+    }
+
+    function openShareDialog() {
+      prepareShareDialog();
+      const dialog = $('shareDialog');
+      if (dialog?.showModal) dialog.showModal();
+      else openSystemShare();
+    }
     function safe(text) { const el=document.createElement('span'); el.textContent=text; return el.innerHTML; }
     let renderToken = 0;
-    function pdfPanel(file, label, showOverlayLabel = true) {
+    function pdfPanel(file, label, showOverlayLabel = true, sectionIndex = state.index, panelIndex = 0) {
       const overlayLabel = showOverlayLabel ? `<span class="page-label">${safe(label)}</span>` : '';
-      return `<article class="page" aria-label="${safe(label)}"><div class="pdf-canvas-wrap" data-pdf="${safe(file)}" data-label="${safe(label)}" role="button" tabindex="0" aria-label="Open ${safe(label)} in full screen" title="Open ${safe(label)} in full screen"><div class="pdf-loading" role="status">Loading ${safe(label)}…</div><canvas role="img" aria-label="${safe(label)}"></canvas><div class="pdf-error" role="alert"><span>This page could not be displayed.</span><a href="${encodeURI(file)}" target="_blank" rel="noopener">Open ${safe(label)} PDF</a></div></div>${overlayLabel}</article>`;
+      return `<article class="page" aria-label="${safe(label)}"><div class="pdf-canvas-wrap" data-pdf="${safe(file)}" data-label="${safe(label)}" data-section-index="${sectionIndex}" data-panel-index="${panelIndex}" role="button" tabindex="0" aria-label="Open ${safe(label)} in full screen" title="Open ${safe(label)} in full screen"><div class="pdf-loading" role="status">Loading ${safe(label)}…</div><canvas role="img" aria-label="${safe(label)}"></canvas><div class="pdf-error" role="alert"><span>This page could not be displayed.</span><a href="${encodeURI(file)}" target="_blank" rel="noopener">Open ${safe(label)} PDF</a></div></div>${overlayLabel}</article>`;
     }
     async function renderPdfPanel(wrap, token) {
       if (!window.pdfjsLib) {
@@ -290,36 +453,137 @@
       wrap.setAttribute('aria-label', `${action} ${wrap.dataset.label}${suffix}`);
       wrap.title = active ? 'Exit full screen' : `Open ${wrap.dataset.label} in full screen`;
     }
-    async function togglePageFullscreen(wrap) {
-      if (document.fullscreenElement === wrap) {
-        await document.exitFullscreen();
-        return;
-      }
-      if (wrap.classList.contains('fullscreen-fallback')) {
-        wrap.classList.remove('fullscreen-fallback');
-        document.body.classList.remove('viewer-open');
-        setFullscreenLabel(wrap, false);
-        return;
-      }
-      try {
-        if (document.fullscreenElement) await document.exitFullscreen();
-        if (wrap.requestFullscreen) {
-          await wrap.requestFullscreen();
-          return;
+
+    const viewer = { open:false, sectionIndex:null, panelIndex:null, suppressClickUntil:0 };
+
+    function sectionPanelCount(sectionIndex) {
+      return pages[sectionIndex]?.kind === 'spread' ? 2 : 1;
+    }
+
+    function flatPanelList() {
+      const list = [];
+      pages.forEach((page, sectionIndex) => {
+        const count = page.kind === 'spread' ? 2 : 1;
+        for (let panelIndex = 0; panelIndex < count; panelIndex += 1) {
+          list.push({ sectionIndex, panelIndex });
         }
-      } catch (error) {
-        console.warn('Native full screen was unavailable; using the full-screen viewer instead.', error);
+      });
+      return list;
+    }
+
+    function currentViewerFlatIndex() {
+      return flatPanelList().findIndex(item =>
+        item.sectionIndex === viewer.sectionIndex && item.panelIndex === viewer.panelIndex
+      );
+    }
+
+    function closePageViewer({fromHistory=false} = {}) {
+      const openWrap = document.querySelector('.pdf-canvas-wrap.fullscreen-fallback');
+      if (openWrap) {
+        openWrap.classList.remove('fullscreen-fallback');
+        setFullscreenLabel(openWrap, false);
       }
+      document.body.classList.remove('viewer-open');
+      viewer.open = false;
+      viewer.sectionIndex = null;
+      viewer.panelIndex = null;
+
+      if (!fromHistory && history.state?.viewer) {
+        history.back();
+      }
+    }
+
+    function revealViewerWrap() {
+      const selectorText = `.pdf-canvas-wrap[data-section-index="${viewer.sectionIndex}"][data-panel-index="${viewer.panelIndex}"]`;
+      const wrap = spread.querySelector(selectorText);
+      if (!wrap) return false;
+      document.querySelectorAll('.pdf-canvas-wrap.fullscreen-fallback').forEach(item => {
+        item.classList.remove('fullscreen-fallback');
+        setFullscreenLabel(item, false);
+      });
       wrap.classList.add('fullscreen-fallback');
       document.body.classList.add('viewer-open');
       setFullscreenLabel(wrap, true);
+      wrap.focus({ preventScroll:true });
+      return true;
     }
+
+    function openPageViewer(wrap, {pushHistory=true} = {}) {
+      viewer.open = true;
+      viewer.sectionIndex = Number(wrap.dataset.sectionIndex);
+      viewer.panelIndex = Number(wrap.dataset.panelIndex);
+      revealViewerWrap();
+
+      const url = new URL(window.location.href);
+      url.searchParams.set('section', String(viewer.sectionIndex + 1));
+      if (pushHistory) {
+        history.pushState({ viewer:true, section:viewer.sectionIndex + 1, panel:viewer.panelIndex }, '', url);
+      } else {
+        history.replaceState({ viewer:true, section:viewer.sectionIndex + 1, panel:viewer.panelIndex }, '', url);
+      }
+    }
+
+    function showViewerPanel(sectionIndex, panelIndex) {
+      viewer.open = true;
+      viewer.sectionIndex = sectionIndex;
+      viewer.panelIndex = panelIndex;
+      state.index = sectionIndex;
+      update({ historyMode:'viewer-replace', scroll:false });
+      window.requestAnimationFrame(() => revealViewerWrap());
+    }
+
+    function moveViewerPanel(amount) {
+      const list = flatPanelList();
+      const current = currentViewerFlatIndex();
+      if (current < 0) return;
+      const targetIndex = Math.max(0, Math.min(list.length - 1, current + amount));
+      if (targetIndex === current) return;
+      const target = list[targetIndex];
+      showViewerPanel(target.sectionIndex, target.panelIndex);
+    }
+
+    function togglePageFullscreen(wrap) {
+      if (wrap.classList.contains('fullscreen-fallback')) {
+        closePageViewer();
+        return;
+      }
+      openPageViewer(wrap);
+    }
+
     function enableFullscreenPages() {
       spread.querySelectorAll('.pdf-canvas-wrap').forEach(wrap => {
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let tracking = false;
+
+        wrap.addEventListener('touchstart', event => {
+          if (!wrap.classList.contains('fullscreen-fallback') || event.touches.length !== 1) {
+            tracking = false;
+            return;
+          }
+          touchStartX = event.touches[0].clientX;
+          touchStartY = event.touches[0].clientY;
+          tracking = true;
+        }, { passive:true });
+
+        wrap.addEventListener('touchend', event => {
+          if (!tracking || !wrap.classList.contains('fullscreen-fallback') || event.changedTouches.length !== 1) return;
+          tracking = false;
+          const deltaX = event.changedTouches[0].clientX - touchStartX;
+          const deltaY = event.changedTouches[0].clientY - touchStartY;
+          const horizontalSwipe = Math.abs(deltaX) >= 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.15;
+          if (!horizontalSwipe) return;
+          viewer.suppressClickUntil = Date.now() + 500;
+          if (deltaX < 0) moveViewerPanel(1);
+          else moveViewerPanel(-1);
+        }, { passive:true });
+
         wrap.addEventListener('click', event => {
           if (event.target.closest('a')) return;
+          if (Date.now() < viewer.suppressClickUntil) return;
           togglePageFullscreen(wrap);
         });
+
         wrap.addEventListener('keydown', event => {
           if (event.key !== 'Enter' && event.key !== ' ') return;
           event.preventDefault();
@@ -521,44 +785,119 @@
       setTtsControls();
     }
 
-    function update() {
+    function update({historyMode='replace', scroll=false} = {}) {
       stopReading(false);
       const p = pages[state.index];
       spread.className = `spread ${p.kind === 'single' ? 'single' : ''}`;
-      spread.innerHTML = p.kind === 'single' ? pdfPanel(p.left, p.label) : pdfPanel(p.left, `${p.chapter}, illustration for page ${p.number}`) + pdfPanel(p.right, `${p.chapter}, story text page ${p.number}`, false);
-      const captionGuide = p.kind === 'single'
-        ? '<span>You are worthy. Seek help sincerely, Allah SWT will answer.</span>'
-        : '<span class="desktop-layout">Illustration on the left · story text on the right</span><span class="mobile-layout">Illustration on the top · story text on the bottom</span>';
-      $('caption').innerHTML = `<strong>${safe(p.label)}</strong>${captionGuide}`;
+      spread.innerHTML = p.kind === 'single'
+        ? pdfPanel(p.left, p.label, false, state.index, 0)
+        : pdfPanel(p.left, `${p.chapter}, illustration for page ${p.number}`, false, state.index, 0) + pdfPanel(p.right, `${p.chapter}, story text page ${p.number}`, false, state.index, 1);
+      $('caption').textContent = 'You are worthy. You were chosen. If you need help, ask sincerely, and He will answer.';
       selector.value = state.index;
       $('progressText').textContent = `Section ${state.index + 1} of ${pages.length}`;
       $('progressFill').style.width = `${((state.index + 1) / pages.length) * 100}%`;
       $('previousButton').disabled = $('firstButton').disabled = state.index === 0;
       $('nextButton').disabled = $('lastButton').disabled = state.index === pages.length - 1;
       const marked = state.bookmarks.includes(state.index);
-      $('bookmarkButton').setAttribute('aria-pressed', marked); $('bookmarkButton').textContent = marked ? 'Bookmarked' : 'Bookmark';
+      $('bookmarkButton').setAttribute('aria-pressed', marked);
+      $('bookmarkButton').textContent = marked ? 'Bookmarked' : 'Bookmark';
       [...toc.children].forEach((b,i)=>b.classList.toggle('current',i===state.index));
       localStorage.setItem('mercy-reader-position', state.index);
+
+      const sectionUrl = new URL(window.location.href);
+      sectionUrl.searchParams.set('section', String(state.index + 1));
+      if (historyMode === 'push') {
+        history.pushState({ section:state.index + 1 }, '', sectionUrl);
+      } else if (historyMode === 'viewer-replace') {
+        history.replaceState({ viewer:true, section:state.index + 1, panel:viewer.panelIndex }, '', sectionUrl);
+      } else if (historyMode === 'replace') {
+        history.replaceState({ section:state.index + 1 }, '', sectionUrl);
+      }
+
       enableFullscreenPages();
       renderVisiblePdfs();
       setTtsControls();
+      if (scroll) $('reader').scrollIntoView({block:'start'});
+      if (viewer.open) window.requestAnimationFrame(() => revealViewerWrap());
     }
-    pages.forEach((p,i)=> { const opt=document.createElement('option'); opt.value=i; opt.textContent=p.label; selector.append(opt); const b=document.createElement('button'); b.type='button'; b.textContent=`${i+1}. ${p.label}`; b.addEventListener('click',()=>{state.index=i; update(); $('tocDialog').close(); $('reader').focus();}); toc.append(b); });
-    function move(amount) { state.index=Math.max(0,Math.min(pages.length-1,state.index+amount)); update(); $('reader').scrollIntoView({block:'start'}); }
-    $('firstButton').onclick=()=>{state.index=0;update()}; $('lastButton').onclick=()=>{state.index=pages.length-1;update()}; $('previousButton').onclick=()=>move(-1); $('nextButton').onclick=()=>move(1); selector.onchange=()=>{state.index=Number(selector.value);update()};
-    $('tocButton').onclick=()=>$('tocDialog').showModal(); $('tocClose').onclick=()=>$('tocDialog').close();
+    pages.forEach((p,i)=> {
+      const opt=document.createElement('option');
+      opt.value=i;
+      opt.textContent=p.label;
+      selector.append(opt);
+      const b=document.createElement('button');
+      b.type='button';
+      b.textContent=`${i+1}. ${p.label}`;
+      b.addEventListener('click',()=>{
+        state.index=i;
+        update({historyMode:'push'});
+        if ($('tocDialog')?.open) $('tocDialog').close();
+        $('reader').focus();
+      });
+      toc.append(b);
+    });
+    function move(amount) {
+      const nextIndex=Math.max(0,Math.min(pages.length-1,state.index+amount));
+      if (nextIndex === state.index) return;
+      state.index=nextIndex;
+      update({historyMode:'push',scroll:true});
+    }
+    $('firstButton').onclick=()=>{if(state.index!==0){state.index=0;update({historyMode:'push',scroll:true})}};
+    $('lastButton').onclick=()=>{if(state.index!==pages.length-1){state.index=pages.length-1;update({historyMode:'push',scroll:true})}};
+    $('previousButton').onclick=()=>move(-1);
+    $('nextButton').onclick=()=>move(1);
+    selector.onchange=()=>{const next=Number(selector.value);if(next!==state.index){state.index=next;update({historyMode:'push'})}};
+
+    // Swipe left for the next section and swipe right for the previous section.
+    // Vertical scrolling and pinch-to-zoom remain available.
+    let swipeStartX = 0;
+    let swipeStartY = 0;
+    let swipeTracking = false;
+    spread.addEventListener('touchstart', event => {
+      if (viewer.open) {
+        swipeTracking = false;
+        return;
+      }
+      if (event.touches.length !== 1) {
+        swipeTracking = false;
+        return;
+      }
+      swipeStartX = event.touches[0].clientX;
+      swipeStartY = event.touches[0].clientY;
+      swipeTracking = true;
+    }, { passive:true });
+
+    spread.addEventListener('touchend', event => {
+      if (!swipeTracking || event.changedTouches.length !== 1) return;
+      swipeTracking = false;
+      const deltaX = event.changedTouches[0].clientX - swipeStartX;
+      const deltaY = event.changedTouches[0].clientY - swipeStartY;
+      const horizontalSwipe = Math.abs(deltaX) >= 55 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25;
+      if (!horizontalSwipe) return;
+      if (deltaX < 0 && state.index < pages.length - 1) move(1);
+      if (deltaX > 0 && state.index > 0) move(-1);
+    }, { passive:true });
+    if ($('tocButton')) $('tocButton').onclick=()=>$('tocDialog').showModal();
+    if ($('tocClose')) $('tocClose').onclick=()=>$('tocDialog').close();
+    if ($('shareButton')) $('shareButton').addEventListener('click', openShareDialog);
+    if ($('shareClose')) $('shareClose').addEventListener('click', () => $('shareDialog').close());
+    if ($('shareDialog')) $('shareDialog').addEventListener('click', event => {
+      if (event.target === $('shareDialog')) $('shareDialog').close();
+    });
     $('bookmarkButton').onclick=()=>{const i=state.bookmarks.indexOf(state.index); i<0?state.bookmarks.push(state.index):state.bookmarks.splice(i,1); localStorage.setItem('mercy-reader-bookmarks',JSON.stringify(state.bookmarks));update()};
     $('themeButton').onclick=()=>{const night=document.body.classList.toggle('night'); $('themeButton').setAttribute('aria-pressed',night); $('themeButton').textContent=night?'Day theme':'Night theme'; localStorage.setItem('mercy-reader-theme',night?'night':'day')};
-    document.addEventListener('fullscreenchange',()=>{
-      document.querySelectorAll('.pdf-canvas-wrap').forEach(wrap => setFullscreenLabel(wrap, document.fullscreenElement === wrap));
-    });
     document.addEventListener('keydown',event=>{
-      if(event.key !== 'Escape') return;
-      const fallback = document.querySelector('.pdf-canvas-wrap.fullscreen-fallback');
-      if(!fallback) return;
-      fallback.classList.remove('fullscreen-fallback');
-      document.body.classList.remove('viewer-open');
-      setFullscreenLabel(fallback, false);
+      if (!viewer.open) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closePageViewer();
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        moveViewerPanel(-1);
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        moveViewerPanel(1);
+      }
     });
     readButton.addEventListener('click', startReading);
     ttsPlayButton.addEventListener('click', startReading);
@@ -576,9 +915,26 @@
       window.setTimeout(loadVoices, 1000);
     }
     window.addEventListener('beforeunload', () => speechEngine?.cancel());
+    window.addEventListener('popstate', event => {
+      if (viewer.open) {
+        const currentSection = viewer.sectionIndex ?? state.index;
+        closePageViewer({fromHistory:true});
+        state.index = currentSection;
+        const url = new URL(window.location.href);
+        url.searchParams.set('section', String(state.index + 1));
+        history.replaceState({section:state.index + 1}, '', url);
+        update({historyMode:'none'});
+        return;
+      }
+
+      const section = Number(event.state?.section || new URLSearchParams(window.location.search).get('section'));
+      if (!Number.isInteger(section) || section < 1 || section > pages.length) return;
+      state.index = section - 1;
+      update({historyMode:'none'});
+    });
     if(localStorage.getItem('mercy-reader-theme')==='night') $('themeButton').click();
-    document.addEventListener('keydown',e=>{if(e.target.matches('select,button')||$('tocDialog').open)return; if(e.key==='ArrowLeft') move(-1); if(e.key==='ArrowRight') move(1);});
-    update();
+    document.addEventListener('keydown',e=>{if(viewer.open||e.target.matches('select,button')||$('tocDialog').open)return; if(e.key==='ArrowLeft') move(-1); if(e.key==='ArrowRight') move(1);});
+    update({historyMode:'replace'});
   })();
   </script>
 </body>
