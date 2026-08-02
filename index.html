@@ -34,9 +34,13 @@
     .page { position:relative; min-height:65vh; padding:clamp(.4rem,1vw,.9rem); background:#101b30; border-right:1px solid rgba(215,174,70,.55); }
     .page:last-child { border-right:0; }
     .page .page-label { position:absolute; left:.9rem; bottom:.75rem; color:white; background:rgba(0,0,0,.65); font-family:system-ui,sans-serif; font-size:.75rem; border-radius:.25rem; padding:.25rem .45rem; z-index:1; }
-    .pdf-canvas-wrap { width:100%; min-height:62vh; display:flex; align-items:flex-start; justify-content:center; background:#202020; overflow:hidden; touch-action:pan-y pinch-zoom; }
-    .pdf-canvas-wrap canvas { display:none; width:100%; height:auto; background:#fff; box-shadow:0 2px 18px rgba(0,0,0,.28); touch-action:pan-y pinch-zoom; }
+    .pdf-canvas-wrap { position:relative; width:100%; min-height:62vh; display:flex; align-items:flex-start; justify-content:center; background:#202020; overflow:hidden; touch-action:pan-y pinch-zoom; cursor:zoom-in; }
+    .pdf-canvas-wrap:focus-visible { outline:3px solid #ffd667; outline-offset:-3px; }
+    .pdf-canvas-wrap canvas { display:none; width:100%; height:auto; background:#fff; box-shadow:0 2px 18px rgba(0,0,0,.28); touch-action:pan-y pinch-zoom; cursor:zoom-in; }
     .pdf-canvas-wrap.ready canvas { display:block; }
+    .pdf-canvas-wrap:fullscreen, .pdf-canvas-wrap.fullscreen-fallback { position:fixed; inset:0; z-index:9999; width:100vw; height:100vh; min-height:100vh; padding:0; background:#000; align-items:center; justify-content:center; overflow:auto; cursor:zoom-out; }
+    .pdf-canvas-wrap:fullscreen canvas, .pdf-canvas-wrap.fullscreen-fallback canvas { width:auto !important; height:auto !important; max-width:100vw; max-height:100vh; object-fit:contain; cursor:zoom-out; }
+    body.viewer-open { overflow:hidden; }
     .pdf-loading, .pdf-error { width:100%; min-height:62vh; display:flex; align-items:center; justify-content:center; padding:2rem; text-align:center; color:#edf2ff; font:600 .95rem/1.5 system-ui,sans-serif; }
     .pdf-error { display:none; flex-direction:column; gap:.8rem; }
     .pdf-canvas-wrap.failed .pdf-loading { display:none; }
@@ -159,7 +163,7 @@
     let renderToken = 0;
     function pdfPanel(file, label, showOverlayLabel = true) {
       const overlayLabel = showOverlayLabel ? `<span class="page-label">${safe(label)}</span>` : '';
-      return `<article class="page" aria-label="${safe(label)}"><div class="pdf-canvas-wrap" data-pdf="${safe(file)}" data-label="${safe(label)}"><div class="pdf-loading" role="status">Loading ${safe(label)}…</div><canvas role="img" aria-label="${safe(label)}"></canvas><div class="pdf-error" role="alert"><span>This page could not be displayed.</span><a href="${encodeURI(file)}" target="_blank" rel="noopener">Open ${safe(label)} PDF</a></div></div>${overlayLabel}</article>`;
+      return `<article class="page" aria-label="${safe(label)}"><div class="pdf-canvas-wrap" data-pdf="${safe(file)}" data-label="${safe(label)}" role="button" tabindex="0" aria-label="Open ${safe(label)} in full screen" title="Open ${safe(label)} in full screen"><div class="pdf-loading" role="status">Loading ${safe(label)}…</div><canvas role="img" aria-label="${safe(label)}"></canvas><div class="pdf-error" role="alert"><span>This page could not be displayed.</span><a href="${encodeURI(file)}" target="_blank" rel="noopener">Open ${safe(label)} PDF</a></div></div>${overlayLabel}</article>`;
     }
     async function renderPdfPanel(wrap, token) {
       if (!window.pdfjsLib) {
@@ -195,12 +199,55 @@
       const token = ++renderToken;
       spread.querySelectorAll('.pdf-canvas-wrap').forEach(wrap => renderPdfPanel(wrap, token));
     }
+    function setFullscreenLabel(wrap, active) {
+      const action = active ? 'Exit full screen for' : 'Open';
+      const suffix = active ? '' : ' in full screen';
+      wrap.setAttribute('aria-label', `${action} ${wrap.dataset.label}${suffix}`);
+      wrap.title = active ? 'Exit full screen' : `Open ${wrap.dataset.label} in full screen`;
+    }
+    async function togglePageFullscreen(wrap) {
+      if (document.fullscreenElement === wrap) {
+        await document.exitFullscreen();
+        return;
+      }
+      if (wrap.classList.contains('fullscreen-fallback')) {
+        wrap.classList.remove('fullscreen-fallback');
+        document.body.classList.remove('viewer-open');
+        setFullscreenLabel(wrap, false);
+        return;
+      }
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        if (wrap.requestFullscreen) {
+          await wrap.requestFullscreen();
+          return;
+        }
+      } catch (error) {
+        console.warn('Native full screen was unavailable; using the full-screen viewer instead.', error);
+      }
+      wrap.classList.add('fullscreen-fallback');
+      document.body.classList.add('viewer-open');
+      setFullscreenLabel(wrap, true);
+    }
+    function enableFullscreenPages() {
+      spread.querySelectorAll('.pdf-canvas-wrap').forEach(wrap => {
+        wrap.addEventListener('click', event => {
+          if (event.target.closest('a')) return;
+          togglePageFullscreen(wrap);
+        });
+        wrap.addEventListener('keydown', event => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          togglePageFullscreen(wrap);
+        });
+      });
+    }
     function update() {
       const p = pages[state.index];
       spread.className = `spread ${p.kind === 'single' ? 'single' : ''}`;
       spread.innerHTML = p.kind === 'single' ? pdfPanel(p.left, p.label) : pdfPanel(p.left, `${p.chapter}, illustration for page ${p.number}`) + pdfPanel(p.right, `${p.chapter}, story text page ${p.number}`, false);
       const captionGuide = p.kind === 'single'
-        ? '<span>Original book page</span>'
+        ? '<span>You are worthy. Seek help sincerely, Allah SWT will answer.</span>'
         : '<span class="desktop-layout">Illustration on the left · story text on the right</span><span class="mobile-layout">Illustration on the top · story text on the bottom</span>';
       $('caption').innerHTML = `<strong>${safe(p.label)}</strong>${captionGuide}`;
       selector.value = state.index;
@@ -212,6 +259,7 @@
       $('bookmarkButton').setAttribute('aria-pressed', marked); $('bookmarkButton').textContent = marked ? 'Bookmarked' : 'Bookmark';
       [...toc.children].forEach((b,i)=>b.classList.toggle('current',i===state.index));
       localStorage.setItem('mercy-reader-position', state.index);
+      enableFullscreenPages();
       renderVisiblePdfs();
     }
     pages.forEach((p,i)=> { const opt=document.createElement('option'); opt.value=i; opt.textContent=p.label; selector.append(opt); const b=document.createElement('button'); b.type='button'; b.textContent=`${i+1}. ${p.label}`; b.addEventListener('click',()=>{state.index=i; update(); $('tocDialog').close(); $('reader').focus();}); toc.append(b); });
@@ -220,6 +268,17 @@
     $('tocButton').onclick=()=>$('tocDialog').showModal(); $('tocClose').onclick=()=>$('tocDialog').close();
     $('bookmarkButton').onclick=()=>{const i=state.bookmarks.indexOf(state.index); i<0?state.bookmarks.push(state.index):state.bookmarks.splice(i,1); localStorage.setItem('mercy-reader-bookmarks',JSON.stringify(state.bookmarks));update()};
     $('themeButton').onclick=()=>{const night=document.body.classList.toggle('night'); $('themeButton').setAttribute('aria-pressed',night); $('themeButton').textContent=night?'Day theme':'Night theme'; localStorage.setItem('mercy-reader-theme',night?'night':'day')};
+    document.addEventListener('fullscreenchange',()=>{
+      document.querySelectorAll('.pdf-canvas-wrap').forEach(wrap => setFullscreenLabel(wrap, document.fullscreenElement === wrap));
+    });
+    document.addEventListener('keydown',event=>{
+      if(event.key !== 'Escape') return;
+      const fallback = document.querySelector('.pdf-canvas-wrap.fullscreen-fallback');
+      if(!fallback) return;
+      fallback.classList.remove('fullscreen-fallback');
+      document.body.classList.remove('viewer-open');
+      setFullscreenLabel(fallback, false);
+    });
     if(localStorage.getItem('mercy-reader-theme')==='night') $('themeButton').click();
     document.addEventListener('keydown',e=>{if(e.target.matches('select,button')||$('tocDialog').open)return; if(e.key==='ArrowLeft') move(-1); if(e.key==='ArrowRight') move(1);});
     update();
