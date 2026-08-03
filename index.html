@@ -324,6 +324,84 @@
     [86,87],[88,89],[90]
   ];
 
+
+  /*
+    Full narration from the supplied MERCY script. Each story narration is
+    attached to BOTH its illustration page and matching text page. Therefore:
+      - desktop reads the story shown across the paired spread;
+      - mobile can read the same story from either the image or text page.
+  */
+  const STORY_PAIRS = [
+    ...Array.from({length:9}, (_,i) => [8 + (i * 2), 9 + (i * 2)]),
+    ...Array.from({length:10}, (_,i) => [27 + (i * 2), 28 + (i * 2)]),
+    ...Array.from({length:19}, (_,i) => [48 + (i * 2), 49 + (i * 2)])
+  ];
+
+  const STORY_NARRATIONS = [
+    "Zayd woke up to a room that felt like a tangled reflection of his own mind: cluttered, noisy, and chaotic. Unfinished sketches were scattered across his desk like abandoned dreams, and a half-read book lay facedown on the rug. At twelve, Zayd often felt like he was running a race where the finish line kept moving. Every half-started project felt like a promise he couldn’t keep.",
+    "Seeking a fresh start, Zayd headed to the kitchen to surprise his mother. He reached for the heavy milk carton, imagining a perfect stack of pancakes. But as he turned, his grip slipped. A white wave crashed across the counter and onto the floor, followed by a snowy explosion of the growing puddle, his heart sinking. Even when he tried, he made a mess.",
+    "That night, the silence of the house felt heavy and suffocating. Zayd sat on his bed long after the evening prayer ended. He felt a deep, gnawing guilt. He thought about the spilled milk, the messy room, and the prayers he sometimes rushed through. His voice, whispered into the dark, “Why can’t I just be better? Does Allah only see me unworthy? Why do I keep on stumbling?” Tears rolled down his cheeks. But as he sat there, something inside him whispered back: “I can start again.” He wiped his face, took a deep breath, and stood up. “Ya Allah,” he said, turning to You, “guide me. Help me be better than I was yesterday.” He stood in Qiyam, pouring his heart out to Allah, asking for strength, forgiveness, and guidance.",
+    "The door creaked open, and a soft light spilled in. It was Khalid, Zayd’s father. He didn’t ask what was wrong or tell Zayd to go to bed. Instead, he walked over and sat down on the rug beside his son. Khalid’s presence was like a warm blanket, steady and calm. He waited until Zayd’s breathing finally slowed before he spoke, his voice a gentle murmur in the still night air.",
+    "“Do you know the difference between a mistake and a failure, Zayd?” Khalid asked softly. “Iblis made a mistake, but his real downfall was pride; he let his error define him and turned away. But the beloved servants of Allah are not those who never fall. They are the ones who, every time they stumble, use the ground to push themselves back up. Perfection is for Allah. For us, beauty is in returning.” Zayd listened closely, his heart feeling lighter with every word. Khalid smiled and added, “So don’t stay in the dark of your thoughts. Turn to Allah, learn, grow, and keep trying. He sees every step, every effort, and every heartfelt dua.” Zayd nodded, a small but genuine smile appearing. He felt hope begin to bloom in his heart.",
+    "Khalid pointed to a small potted plant on the windowsill, struggling toward the moonlight. “Look at this plant,” he said. “It doesn’t grow in a perfectly straight line. It twists and bends, and sometimes it loses a leaf. But the struggle to reach for the light is the proof that it is alive. Your messy thoughts and mistakes aren’t signs of failure, Zayd. They are the growing pains of a living soul.” Zayd looked at the plant again. It wasn’t perfect, but it was still trying. Just like him. He felt something shift inside—a tiny spark of hope, soft but real.",
+    "The next morning, Zayd didn’t try to fix everything at once. He started small. He picked up the books from his floor and stacked them neatly on the shelf. As he worked, he realized that his \"messy\" thoughts were often where his best drawings came from. He wasn’t broken; he was just in progress. He realized that his unique way of seeing the world was a gift that simply needed balance. He made his bed, opened the window, and let the fresh air in. He took a deep breath and smiled. Today, he would keep trying—one small step at a time.",
+    "Khalid joined him by the window as the first hint of dawn colored the sky. “See the moon and the sun?” Khalid asked. “The sun and moon take turns and never compete; they each have their time. When night comes, the sun doesn’t panic or worry that it has failed. It doesn’t disappear forever. It simply waits for its moment and returns. We must learn to be the same with our own light.” Zayd looked at the horizon, watching the sun rise a little higher, spilling gold across the sky. He understood. Allah gives every day a new chance. What matters is not perfection, but the sincerity to keep trying. He turned to his father and smiled. “JazakAllah khair, Abbu.” Khalid ruffled his hair. “I’m proud of you, my son.” Together, they watched the new day begin —full of hope, mercy, and endless possibilities.",
+    "Zayd watched the light grow. He understood now that success was the process of cleansing the soul —the Nafs—over and over, just as the sun rises again and again. He didn’t have to be perfect; he just had to keep returning. He picked up his sketchbook, not with the pressure to be great, but with the simple joy of beginning again. The sun would rise, and so would he. He whispered a small dua: “Ya Allah, guide me, help me, and keep me on the path that pleases You.” With a heart full of hope and a sketchbook full of dreams, Zayd took a deep breath… and began again.",
+    "As Zayd grew older, school became harder instead of easier. Every morning, his mother handed him a glass of water and a single tablet before sending him to school. Some children noticed. Soon, whispers became laughter. \"Weird.\" \"Slow.\" \"He has to take medicine.\" Zayd pretended not to hear them. He was trying his best. He really was. Most lessons felt like puzzles with missing pieces. While his classmates memorised the answers, Zayd couldn't. His mind always searched for one thing first. \"Why?\" During Islamic Studies, his teacher showed the class a picture of the Kaabah. A large black cube. Thousands of people walking around it. Everyone understood. Except Zayd. \"What does it mean?\" \"Why do we face it when we pray?\" \"If Allah is everywhere, why do we turn towards one place?\"",
+    "The more he learned… the more questions he had. Months passed before he finally understood. Not because he refused to learn… but because he could never remember something until he understood its meaning. One afternoon, his mother was called to school. His teacher spoke kindly. \"Perhaps Zayd should repeat Standard One.\" After a pause, she quietly added, \"Or maybe PPKI would be more suitable.\" His mother looked at her son. Then she smiled. \"I know my child.\" \"He learns differently.\" \"But he will learn.\" That evening… instead of giving up on him… she searched for another tuition class. And then another. Sometimes… the greatest gift a child receives… is someone who refuses to stop believing in them.",
+    "One night, Zayd stood outside his father’s study. His hand hovered over the door. He wanted to knock… but something held him back. What if Abbu thought his questions were silly? What if everyone already knew the answers… except him? He took one slow breath. Then another. Finally… he knocked. “Come in.” Khalid looked up from the Qur’an he had been reading. He smiled. “What is it, Zayd?” Zayd lowered his eyes. “Abbu…” “I’m sorry.” Khalid blinked. “For what?”",
+    "“I ask too many questions.” “I don’t mean to.” “I’m not trying to argue.” “I just…” “I can’t stop asking.” “If I don’t understand something… “my mind keeps thinking about it.” For a moment… the room was silent. Then Khalid smiled. Not a disappointed smile. A warm one. The kind that made a worried heart feel lighter. “I thought you had broken something.” Zayd looked up. Then… for the first time that day… he laughed. “I’ve never been upset by your questions, Zayd.” “In fact…” “I think sincere questions are one of Allah’s greatest gifts.” Zayd hesitated.",
+    "Then he quietly asked, “Abbu…” “If Allah is everywhere… “why do we pray towards the Kaabah?” Khalid closed his Qur’an gently. He smiled once more. “That…” “is a beautiful question.” Khalid leaned back in his chair. For a moment… he simply looked at his son. Not with frustration. Not with disappointment. But with kindness. “My son…” “Do you know what makes me happiest?” Zayd shook his head. “That you came to ask. You could have stayed silent. You could have pretended to understand. But instead… you came looking for the truth.”",
+    "Khalid smiled. “There is no shame in saying… ‘I don’t understand.’” He chuckled softly. “Do you know… I used to ask your grandfather hundreds of questions too. So many… that sometimes he would laugh before I even finished speaking.” Zayd smiled. “Really?” “Oh yes. I wanted to know why the sky changed colour. Why Allah made mosquitoes. Why people prayed. Why some people were kind… and others were cruel.” Khalid looked towards the window. “The people who stop asking… often stop growing. “But the people who ask sincerely…",
+    "Allah opens doors for them… one answer at a time.” He turned back towards Zayd. “So… What is the question that has been living inside your heart?” Zayd looked down. Then quietly whispered, “It’s about the Kaabah.” Khalid smiled. \"Then let me tell you about another man… who asked even more questions than you.\" Zayd looked up. \"Really?\" \"Oh yes.\" \"He questioned everything.\" He wondered about the stars. Then the moon. Then the sun. He questioned the idols his people worshipped. He even questioned the beliefs of his own father.",
+    "Not because he wanted to argue… but because his heart refused to pretend it understood what it did not. For a long time, people misunderstood him. Some thought he asked too many questions. Others thought he had lost his way. Khalid paused. Then smiled again. \"But Allah never became angry with his questions.\" \"In fact… Allah guided him because he sincerely searched for the truth.\" He looked gently at Zayd. \"Do you know who that man was?\" Zayd slowly shook his head. Khalid's eyes softened. \"It was Prophet Ibrahim, peace be upon him.\" \"The very man who spent his life asking questions… became the man Allah honoured with building the Kaabah.\"",
+    "\"The man who built… the Kaabah?\" Khalid nodded. \"Yes.\" \"The very boy who grew into a man that questioned the stars, the moon, the sun, the idols, and the beliefs of his people…\" \"…was the very man Allah honoured with rebuilding His Sacred House.\" He let the words settle. \"You see, my son…\" \"Allah is never threatened by sincere questions.\" \"He already knows what is inside our hearts.\" \"He knows the difference between someone who questions because they are arrogant…\" \"…and someone who questions because they are searching for the truth.\" Khalid smiled. \"Prophet Ibrahim's questions didn't distance him from Allah.\" \"They brought him closer.\" He placed his hand gently on Zayd's shoulder.",
+    "\"So never be ashamed of asking sincerely.\" \"Just make sure your questions always lead you towards Allah… not away from Him.\" For the first time that evening… Zayd felt that perhaps… his questions were never a weakness. Perhaps… they were simply the beginning of his journey. Sometimes… Allah doesn't answer our questions immediately… because first… He prepares our hearts to receive the answer.",
+    "Years passed. The questions never stopped. Neither did the hard work. Every afternoon, Zayd's mother waited outside another tuition centre. Sometimes he was tired. Sometimes frustrated. Sometimes he wondered if everyone else was simply born knowing things that took him weeks to understand. But each morning… he tried again. One exam became another. Then another. Little by little… the impossible became possible. One afternoon, his class suddenly became noisy. He noticed that his Advanced Mathematics teacher was handing back examination papers. All the students who received their papers looked clearly upset. Even on the best student’s page, Zayd could make out a red letter. There was a sudden burst of anxious sadness inside him as he slowly waited for his turn. As the Advanced Mathematics teacher passed him his papers, she smiled. Across the top of the page…was a single letter. A.",
+    "A few moments later, during Islamic Studies, the teacher returned another paper. Another A. Zayd could only stare. His hands trembled. He wasn’t dreaming. He had really done it. Then he heard the whispers of the other students—not complete sentences, but enough for him to understand. “Teacher’s pet. He must have seen the questions beforehand.” “His paper must have been different.” “Maybe he was given the special-needs version.” Their words hurt him deeply. None of them were true, and Zayd could not understand why his classmates would say such things. He ran all the way home. In his excitement, he nearly forgot to remove his shoes before rushing through the front door. “Ummi!” “Abbu!” “I got another A!” His mother laughed as tears of joy filled her eyes. His father smiled more widely than Zayd had ever seen before. That evening, they celebrated with Zayd’s favourite meal, and the whole table rang with laughter.",
+    "His younger siblings cheered and clapped when they heard about his two A grades. For the first time in a long while, Zayd felt light. Later that night, when the house had grown quiet, Khalid gently knocked on Zayd’s bedroom door. “Come with me,” he whispered. Zayd quietly followed Abbu outside into the cool night air. Together, they walked beneath the city lights while the world hummed softly around them. Zayd did not yet know that the conversation awaiting him beneath the stars would remain in his heart for the rest of his life.",
+    "Khalid rested a hand on his son’s shoulder. “I’m happy, Zayd.” He smiled. But not because of your examination results. Not the letter A written on your exam paper. It’s not because you never stopped trying. It’s not because you overcame a lot of hurdles and challenges to finally achieve good grades. He paused before speaking again. “I’m happy, Zayd, because you are of a great moral character.” Zayd looked at his father’s face with a blank stare.",
+    "“Why do you think you passed the exams? Was there a reason behind your success? Something that you have been hiding inside?” “Was it because you felt you had to prove everyone wrong? Maybe you wanted to show them that despite your struggles you could become just as good as everyone else.” Zayd lowered his eyes. His father continued gently. “And perhaps…without even realizing it, you felt you had to prove to Allah that you were worthy. Maybe deep down, you blamed yourself because He created you differently.” The words struck somewhere deep inside him. Tears slowly filled Zayd’s eyes. He had never spoken those thoughts aloud. Yet somehow… his father already knew.",
+    "Khalid let the silence settle between them. Sometimes, silence carried lessons that words could not. After a while, he looked up at the moon. “Zayd… Do you remember the story of Prophet Adam, peace be upon him?” Zayd smiled a little. “The first man.” Khalid nodded. “Yes.” For a moment, neither of them spoke. Only the sounds of the of a busy night life filled the night. Then Khalid asked softly, “Do you remember why Iblis refused to bow?” Zayd thought carefully. “…because he thought he was better.” Khalid smiled. “Exactly.” “But do you remember why he thought he was better?” Zayd looked up at the moon again. “I think…” “He said he was made from fire.” “And Adam was made from clay.” Khalid placed his hand gently on Zayd’s shoulder. “That’s right.” “And that, my son…” “…is where one of the greatest mistakes in history began.”",
+    "“Do you know what was wrong with what Iblis said?” Zayd shook his head. Khalid said gently, “It wasn’t that he was made of fire. It wasn’t that Adam was made of clay. Those were facts. The mistake was in his heart. His pride prevented him from acknowledging that Allah made him bow to someone whom he saw as inferior to him.” “Iblis was powerful. He could have been one of the closest to Allah. But pride entered his heart. He thought he was better than Adam. So he refused to obey. He refused to acknowledge Adam, peace be upon him.” Khalid leaned forward. “And people still make that same mistake today.”",
+    "“Some believe they are better because of their family: Some because of money. Some because of skin colour. Some because of intelligence. Some because they are healthy. Some because another person struggles. The material changes— But pride always sounds the same.” Zayd fell silent, feeling the crushing weight of the truth. Sometimes, he had listened to that very same voice inside himself: pride. After years of enduring bullying and discrimination, he had erected a fortress around his heart. Yet, in his quietest moments, he questioned whether that wall was truly a defense mechanism— or merely a way to savor the thrill of defeating those so-called superior people.",
+    "Khalid looked at his son. “Can I ask you something?” Zayd nodded slowly. “Do you think taking your medicine means your faith is weak?” Zayd looked down. His fingers played with the edge of his sleeve. “Maybe…” he whispered. Khalid didn’t rush. He let the words settle. Then he said, “When we visited Grandma in the hospital… “Did we laugh at the man in the wheelchair?” “No.” “Did we tell the woman who couldn’t walk to just try harder?” “No.” “Did we tell the patient in pain to simply have stronger faith?” “No.” “Why not?” Zayd was silent. Khalid continued gently. “Because we could see their wounds.”",
+    "Many illnesses leave scars people can see. Yours does not.” He paused. “They weren’t there during the nights you begged Allah for sleep. They don’t know that your medicine sometimes makes you tired… slow… or steals some of your laughter. They weren’t there when your right hand started trembling and you had to learn to write again with your left hand. When you lost your ability to draw and paint, depriving you of creating art and displaying your creativity. They don’t see the sacrifice.” “But you still take it. Why Zayd? Many others in your spot do not.” “They are pressured into believing that they have weak iman if they take medication. People around them accuse them of being weak minded… the famous Mind Over Matter phrase. Then there are people who akin it to cheating, like an athlete that cheats by taking enhancers. You take medication rather than handling it like an adult.“ “So why Zayd… why do you take it? Even after all the stigma.”",
+    "Zayd looked up and said gently. “Because someone once told me. If the medication helps me become a person that perform prayers, remembers Allah more, and in general, become a better Muslim…than everything else does not matter. Not what other people think, not the side effects, not the self guilt of feeling like I’m cheating. Nothing else matters” “My first priority should always be to please Allah.” Khalid smiled. “Now Zayd, can you give me the reason why I am happy with you? Why i see you as a great moral character?” Zayd shook his head. “Let me help you find the answer then.”",
+    "“When your right hand started trembling, and you had to relearn how to write with your left hand…when you had to come to terms with the fact that you couldn’t draw or paint anymore. I knew it broke you, as you saw it as your only outlet to proving that maybe you had some potential… You thought being good at arts gave you value.” Khalid continued. “But you never blamed Allah, You never blamed other distant family relatives that had the same situation. You never blamed friends or family that made fun of you for something you did not ask for.”",
+    "“And now, why do you think you passed your exams?” “Was it because you had stronger willpower than the other students? “Was it because you spent far more time studying than they did? “Was it because you knew the questions beforehand? “Was it because you are a student with special needs, so you burned the midnight oil studying while they were asleep?” Zayd thought about the questions and about what the other children had said earlier. It did not take him long to answer. “I think there must have been a mistake somewhere. Maybe they graded my paper incorrectly. Maybe my questions really were easier.”",
+    "“That is what your mind tells you,” Khalid said. “Now, close your eyes and tell me: how does your heart feel? What does your heart say?” Zayd closed his eyes. “It was a blessing from Allah. A gift. I am a child with special needs, and there is no other explanation that makes sense to me. I could not have done it without Him. You and Ummi are also part of the reason, but it was Allah who brought me to both of you. He gave me parents I could never have wished for more from. “So, to answer your question, Abbu, perhaps I developed a unique way of studying over the past few years. But it was all because of Allah.”",
+    "“I still don’t see the connection you are trying to make, Abbu.” Khalid looked at his son. “Then let us look at your own life. When you lost the use of your right hand did you blame Allah?” Zayd shook his head. “No.” “What did you say?” Zayd thought for a moment. “I thanked Allah.” Khalid smiled gently. “You thanked Him?” “Yes.” “For what?” “For giving me another way to continue doing the things I loved.” Zayd looked down at his left hand. “At first…I thought it would take years. I thought I would have to begin everything again. But Allah made the transition easier than I expected. I learned to write with my left hand.” “It did not happen immediately…but it happened much faster than I thought it would.” Khalid nodded. “You could have looked at your right hand and asked why something had been taken from you. “But instead…you looked at your left hand and thanked Allah for what remained.” Zayd listened carefully.",
+    "And when you passed your examinations,” Khalid continued, “did you say that it happened because you were better than everyone else?” “No.” “Did you say it was because you had greater willpower?” “No.” “Did you say you deserved success because you had suffered more than the other students?” Zayd shook his head again. “I said it was a gift from Allah.” “And that is the connection.” Zayd frowned slightly. Khalid leaned forward. “Many people believe their success belongs entirely to them. They say, ‘I succeeded because I never gave up.’ ‘I succeeded because my mind was stronger than my circumstances.’ ‘I succeeded because I suffered more than everyone else.’ ‘I succeeded because I was born into the right family.’ ‘Because of my name.’ ‘Because of my position.’ ‘Because of my wealth.’ ‘Because of my race.’ ‘Because of my religion.’” Khalid paused. “But they forget something.”",
+    "“What do they forget, Abbu?” “They forget that even the strength to continue…is a gift. The willpower they are proud of…the motivation that carried them…the emotional stability that kept them standing…the people who supported them…the opportunities placed before them… even the mind that allowed them to recognize those opportunities… all of it came from Allah.” Zayd lowered his eyes. “A person may work hard,” Khalid continued. “They may sacrifice. They may endure pain that no one else can see. And they may deserve to be proud of the effort they made. But effort should create gratitude… …not arrogance.” Khalid looked towards the night sky. “Years ago, people boasted openly about their family names. They spoke proudly about their wealth. Their ancestry. Their position in society. They wanted everyone to know that they stood above others.”",
+    "He paused. “Today, the words have changed but the pride has not.” Zayd looked at him. “What do you mean?” “Now, people sometimes hide their boasting inside stories of struggle.” Khalid’s voice became softer. “They say, my father was never there for me…yet I still became more successful than you.” “I grew up with nothing, yet I achieved more than everyone else.” “I suffered more than you, so I deserve to stand above you.” “Their pain may be real. Their struggles may be real. “But somewhere along the way…the story stops being about gratitude. “It becomes a throne.” Zayd remained quiet. “They no longer tell the story to give others hope,” Khalid said. “They tell it to prove that they are greater. They believe hardship automatically makes them better than those who suffered differently…or those whose struggles they cannot see.”",
+    "Khalid took a deep breath. “Do you know what happened after Iblis refused? He wanted to prove that Adam was unworthy.” Khalid looked into his son’s eyes. “Be careful, Zayd. Never let your goals become about proving other people wrong. Never study so someone else fails. Never worship so someone else looks smaller. Never ask Allah to lower another person.” “The moment you want someone else’s downfall… You have stepped onto the road Iblis chose.” “But the moment you ask Allah to make you better than yesterday… You are walking the road Adam chose.” “Last year, I asked you what you would wish for if Allah granted you one wish.” You said…you wished no one would ever have to feel what you feel.” Zayd smiled through tears. “When I was asked that question many years ago, I wished only for inner peace.” He placed his hand over Zayd’s. “I thought Allah sent me to guide you.” “But now I think…He sent you to guide me too.” We are all just souls, waiting to be returned one day to our Lord. May He accept our repentance, our struggles, and our love."
+];
+
+  const STORY_NUMBER_BY_PAGE = new Map();
+  STORY_PAIRS.forEach((pair, storyIndex) => {
+    pair.forEach(pageIndex => STORY_NUMBER_BY_PAGE.set(pageIndex, storyIndex));
+  });
+
+  /* Short spoken introductions for the non-story/front-matter pages. */
+  const NON_STORY_NARRATIONS = new Map([
+    [0, 'MERCY, by Shahir Anuar.'],
+    [1, 'MERCY. A story about falling, returning, and becoming again. Written by Shahir Anuar. First edition, 2026.'],
+    [2, 'Copyright and publication information for MERCY.'],
+    [3, 'Dedication to the author’s parents and wife.'],
+    [4, 'Dedication to the author’s children.'],
+    [5, 'Table of contents.'],
+    [6, 'Synopsis of MERCY.'],
+    [7, 'Chapter One. The Balance.'],
+    [26, 'Chapter Two. The Boy Who Asked Too Much.'],
+    [47, 'Chapter Three. Mercy.'],
+    [86, 'Final dua: returning after a mistake, seeking knowledge, and asking Allah for mercy.'],
+    [87, 'About the author, Shahir Anuar.'],
+    [88, 'Support Future Books. Giving is completely optional. Malaysian readers may use Maybank, and international readers may use Stripe.'],
+    [89, 'Mercy is a blessing from Allah. Mercy does not wait for perfection. It meets people in their brokenness and offers grace instead of judgement.'],
+    [90, 'Back cover of MERCY. Everything that we have is an act of mercy from our Lord.']
+  ]);
+
   const pageToSpread = new Map();
   DESKTOP_SPREADS.forEach((spread, spreadIndex) => {
     spread.forEach(pageIndex => pageToSpread.set(pageIndex, spreadIndex));
@@ -341,7 +419,11 @@
     bookmarks: JSON.parse(localStorage.getItem('mercy-bookmarks') || '[]'),
     exitArmedUntil: 0,
     allowingExit: false,
-    speech: null
+    speech: null,
+    speechToken: 0,
+    speechKey: null,
+    speechChunks: [],
+    speechChunkIndex: 0
   };
 
   const normalPage = $('normalPage');
@@ -400,6 +482,129 @@
     });
   }
 
+
+  function narrationEntryForPage(pageIndex) {
+    const storyIndex = STORY_NUMBER_BY_PAGE.get(pageIndex);
+    if (storyIndex !== undefined) {
+      return {
+        key: `story-${storyIndex + 1}`,
+        text: STORY_NARRATIONS[storyIndex]
+      };
+    }
+
+    return {
+      key: `page-${pageIndex + 1}`,
+      text: NON_STORY_NARRATIONS.get(pageIndex) || `MERCY, page ${pageIndex + 1}.`
+    };
+  }
+
+  function currentNarrationEntry() {
+    const pageIndexes = isDesktop() ? currentSpread() : [state.index];
+    const entries = [];
+    const seen = new Set();
+
+    pageIndexes.forEach(pageIndex => {
+      const entry = narrationEntryForPage(pageIndex);
+      if (seen.has(entry.key)) return;
+      seen.add(entry.key);
+      entries.push(entry);
+    });
+
+    return {
+      key: entries.map(entry => entry.key).join('|'),
+      text: entries.map(entry => entry.text).join(' ')
+    };
+  }
+
+  function splitNarrationIntoChunks(text, maxLength=230) {
+    const words = String(text || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+    const chunks = [];
+    let chunk = '';
+
+    words.forEach(word => {
+      const candidate = chunk ? `${chunk} ${word}` : word;
+      if (candidate.length <= maxLength) {
+        chunk = candidate;
+        return;
+      }
+      if (chunk) chunks.push(chunk);
+      chunk = word;
+    });
+
+    if (chunk) chunks.push(chunk);
+    return chunks;
+  }
+
+  function resetReadButton() {
+    $('readButton').textContent = 'Read Aloud';
+    $('readButton').setAttribute('aria-pressed','false');
+  }
+
+  function stopNarration() {
+    state.speechToken += 1;
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    state.speech = null;
+    state.speechKey = null;
+    state.speechChunks = [];
+    state.speechChunkIndex = 0;
+    resetReadButton();
+  }
+
+  function finishNarration(token) {
+    if (token !== state.speechToken) return;
+    state.speech = null;
+    state.speechKey = null;
+    state.speechChunks = [];
+    state.speechChunkIndex = 0;
+    resetReadButton();
+  }
+
+  function speakNextNarrationChunk(token) {
+    if (token !== state.speechToken) return;
+    if (state.speechChunkIndex >= state.speechChunks.length) {
+      finishNarration(token);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(state.speechChunks[state.speechChunkIndex]);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.88;
+    utterance.pitch = 1;
+    state.speech = utterance;
+
+    utterance.onend = () => {
+      if (token !== state.speechToken) return;
+      state.speechChunkIndex += 1;
+      window.setTimeout(() => speakNextNarrationChunk(token), 20);
+    };
+
+    utterance.onerror = event => {
+      if (token !== state.speechToken) return;
+      if (event.error === 'interrupted' || event.error === 'canceled') return;
+      finishNarration(token);
+    };
+
+    speechSynthesis.speak(utterance);
+  }
+
+  function startNarration() {
+    if (!('speechSynthesis' in window)) {
+      alert('Read Aloud is not supported by this browser.');
+      return;
+    }
+
+    const entry = currentNarrationEntry();
+    stopNarration();
+    const token = state.speechToken;
+    state.speechKey = entry.key;
+    state.speechChunks = splitNarrationIntoChunks(entry.text);
+    state.speechChunkIndex = 0;
+
+    $('readButton').textContent = 'Stop Reading';
+    $('readButton').setAttribute('aria-pressed','true');
+    speakNextNarrationChunk(token);
+  }
+
   function loadNormalImage() {
     normalPage.classList.remove('ready','failed');
     normalImage.src = pageFile(state.index);
@@ -442,6 +647,9 @@
   }
 
   function update({historyMode='replace'} = {}) {
+    const narrationEntry = currentNarrationEntry();
+    if (state.speechKey && state.speechKey !== narrationEntry.key) stopNarration();
+
     if (isDesktop()) loadDesktopSpread();
     else loadNormalImage();
 
@@ -697,15 +905,9 @@
   };
 
   $('readButton').onclick = () => {
-    if (!('speechSynthesis' in window)) {
-      alert('Read Aloud is not supported by this browser.');
-      return;
-    }
-    speechSynthesis.cancel();
-    const speech = new SpeechSynthesisUtterance(`MERCY, page ${state.index + 1}.`);
-    speech.lang = 'en-US';
-    speech.rate = 0.9;
-    speechSynthesis.speak(speech);
+    const entry = currentNarrationEntry();
+    if (state.speechKey === entry.key && state.speech) stopNarration();
+    else startNarration();
   };
 
   function shareData() {
@@ -795,12 +997,17 @@
     if (state.allowingExit) return;
 
     if (state.viewerOpen && !event.state?.viewer) {
+      // Keep the final page reached while enlarged instead of restoring the
+      // page that was underneath when the viewer originally opened.
+      const lastViewedIndex = state.index;
       closeViewer({fromHistory:true});
-      const page = Number(event.state?.page || new URLSearchParams(location.search).get('page'));
-      if (Number.isInteger(page) && page >= 1 && page <= TOTAL_PAGES) {
-        state.index = page - 1;
-        update({historyMode:'none'});
-      }
+      state.index = lastViewedIndex;
+      history.replaceState(
+        {book:true,page:lastViewedIndex + 1},
+        '',
+        currentUrl()
+      );
+      update({historyMode:'none'});
       return;
     }
 
@@ -843,6 +1050,10 @@
   desktopMedia.addEventListener('change', () => {
     if (state.viewerOpen) loadViewerImage();
     update({historyMode:'replace'});
+  });
+
+  window.addEventListener('beforeunload', () => {
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
   });
 
   const initialUrl = currentUrl();
