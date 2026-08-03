@@ -98,6 +98,40 @@
       border-top:0;border-radius:0 0 .8rem .8rem;color:var(--navy);
     }
 
+    /* Desktop landscape book spread. Mobile keeps the original single-page reader. */
+    .desktop-spread{display:none;width:100%;min-height:inherit;padding:clamp(.35rem,1vw,.8rem);background:#07142d}
+    .spread-grid{
+      width:100%;min-height:inherit;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      gap:clamp(.35rem,1vw,.85rem);align-items:center;justify-items:stretch;
+    }
+    .spread-panel{
+      position:relative;min-width:0;min-height:inherit;display:grid;place-items:center;overflow:hidden;
+      background:#020817;border:1px solid rgba(215,174,70,.34);cursor:zoom-in;
+    }
+    .spread-panel[hidden]{display:none}
+    .spread-panel img{
+      display:block;width:100%;height:calc(100dvh - 15rem);max-height:calc(100dvh - 15rem);
+      object-fit:contain;background:#fff;transform:none!important;rotate:none!important;
+      user-select:none;-webkit-user-drag:none;
+    }
+    .desktop-spread.single .spread-grid{grid-template-columns:minmax(0,1fr)}
+    .desktop-spread.single .spread-panel{width:min(50%,46rem);justify-self:center}
+    .desktop-spread .spread-loading,.desktop-spread .spread-error{
+      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      color:#eef3ff;font-family:system-ui,sans-serif;font-weight:700;text-align:center;padding:2rem;
+    }
+    .desktop-spread .spread-error{display:none}
+    .spread-panel.ready .spread-loading{display:none}
+    .spread-panel.failed .spread-loading{display:none}
+    .spread-panel.failed .spread-error{display:flex}
+
+    @media(min-width:901px){
+      main{max-width:none;padding-inline:clamp(.65rem,1.5vw,1.4rem)}
+      .book-stage{min-height:calc(100dvh - 13rem)}
+      .normal-page{display:none}
+      .desktop-spread{display:block}
+    }
+
     .panel-viewer[hidden]{display:none}
     .panel-viewer{
       position:fixed;inset:0;z-index:10000;background:#000;
@@ -204,6 +238,21 @@
       <img id="normalImage" src="page001.webp" alt="Page 1">
       <div class="error">This page could not be displayed.</div>
     </div>
+
+    <div class="desktop-spread" id="desktopSpread" aria-label="Two-page desktop book spread">
+      <div class="spread-grid">
+        <div class="spread-panel" id="leftSpreadPanel" role="button" tabindex="0" aria-label="Open left page in full screen">
+          <div class="spread-loading">Loading page…</div>
+          <img id="leftSpreadImage" alt="">
+          <div class="spread-error">This page could not be displayed.</div>
+        </div>
+        <div class="spread-panel" id="rightSpreadPanel" role="button" tabindex="0" aria-label="Open right page in full screen">
+          <div class="spread-loading">Loading page…</div>
+          <img id="rightSpreadImage" alt="">
+          <div class="spread-error">This page could not be displayed.</div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <div class="caption">You are worthy. You were chosen. Ask sincerely, and He will answer.</div>
@@ -213,6 +262,7 @@
   <div class="panel-viewer-stage" id="panelViewerStage">
     <div class="viewer-loading">Loading page…</div>
     <img id="viewerImage" alt="">
+    <img id="viewerImageSecondary" alt="">
     <div class="viewer-error">This page could not be displayed.</div>
   </div>
   <div class="viewer-hint">Swipe left or right to turn the page · Press Back once to close</div>
@@ -258,6 +308,30 @@
   );
   const TOTAL_PAGES = PAGE_FILES.length;
 
+  /*
+    Desktop spreads are explicitly mapped so every illustrated story page stays
+    on the LEFT and its matching text page stays on the RIGHT. Page values below
+    are zero-based indexes (page001 = 0). Chapter/title pages remain single.
+  */
+  const DESKTOP_SPREADS = [
+    [0,1],[2,3],[4,5],[6,7],
+    [8,9],[10,11],[12,13],[14,15],[16,17],[18,19],[20,21],[22,23],[24,25],
+    [26],
+    [27,28],[29,30],[31,32],[33,34],[35,36],[37,38],[39,40],[41,42],[43,44],[45,46],
+    [47],
+    [48,49],[50,51],[52,53],[54,55],[56,57],[58,59],[60,61],[62,63],[64,65],
+    [66,67],[68,69],[70,71],[72,73],[74,75],[76,77],[78,79],[80,81],[82,83],[84,85],
+    [86,87],[88,89],[90]
+  ];
+
+  const pageToSpread = new Map();
+  DESKTOP_SPREADS.forEach((spread, spreadIndex) => {
+    spread.forEach(pageIndex => pageToSpread.set(pageIndex, spreadIndex));
+  });
+
+  const desktopMedia = window.matchMedia('(min-width: 901px)');
+  const isDesktop = () => desktopMedia.matches;
+
   const $ = id => document.getElementById(id);
   const pageFile = index => PAGE_FILES[index];
 
@@ -272,8 +346,15 @@
 
   const normalPage = $('normalPage');
   const normalImage = $('normalImage');
+  const desktopSpread = $('desktopSpread');
+  const leftSpreadPanel = $('leftSpreadPanel');
+  const rightSpreadPanel = $('rightSpreadPanel');
+  const leftSpreadImage = $('leftSpreadImage');
+  const rightSpreadImage = $('rightSpreadImage');
   const panelViewer = $('panelViewer');
+  const panelViewerStage = $('panelViewerStage');
   const viewerImage = $('viewerImage');
+  const viewerImageSecondary = $('viewerImageSecondary');
   const pageSelect = $('pageSelect');
 
   for (let i = 0; i < TOTAL_PAGES; i++) {
@@ -289,7 +370,28 @@
     return url;
   }
 
+  function currentSpreadIndex() {
+    return pageToSpread.get(state.index) ?? 0;
+  }
+
+  function currentSpread() {
+    return DESKTOP_SPREADS[currentSpreadIndex()];
+  }
+
   function preloadNearby() {
+    if (isDesktop()) {
+      const spreadIndex = currentSpreadIndex();
+      [-1,1].forEach(offset => {
+        const spread = DESKTOP_SPREADS[spreadIndex + offset];
+        if (!spread) return;
+        spread.forEach(index => {
+          const image = new Image();
+          image.src = pageFile(index);
+        });
+      });
+      return;
+    }
+
     [-2,-1,1,2].forEach(offset => {
       const index = state.index + offset;
       if (index < 0 || index >= TOTAL_PAGES) return;
@@ -312,14 +414,56 @@
     };
   }
 
-  function update({historyMode='replace'} = {}) {
-    loadNormalImage();
-    pageSelect.value = state.index;
-    $('progressText').textContent = `Page ${state.index + 1} of ${TOTAL_PAGES}`;
-    $('progressFill').style.width = `${((state.index + 1) / TOTAL_PAGES) * 100}%`;
+  function loadSpreadPanel(panel, image, pageIndex) {
+    panel.classList.remove('ready','failed');
+    panel.hidden = pageIndex === undefined;
+    if (pageIndex === undefined) {
+      image.removeAttribute('src');
+      image.alt = '';
+      return;
+    }
+    image.src = pageFile(pageIndex);
+    image.alt = `MERCY page ${pageIndex + 1}`;
+    image.onload = () => {
+      panel.classList.add('ready');
+      panel.classList.remove('failed');
+    };
+    image.onerror = () => {
+      panel.classList.add('failed');
+      panel.classList.remove('ready');
+    };
+  }
 
-    $('firstButton').disabled = $('previousButton').disabled = state.index === 0;
-    $('nextButton').disabled = $('lastButton').disabled = state.index === TOTAL_PAGES - 1;
+  function loadDesktopSpread() {
+    const spread = currentSpread();
+    desktopSpread.classList.toggle('single', spread.length === 1);
+    loadSpreadPanel(leftSpreadPanel,leftSpreadImage,spread[0]);
+    loadSpreadPanel(rightSpreadPanel,rightSpreadImage,spread[1]);
+  }
+
+  function update({historyMode='replace'} = {}) {
+    if (isDesktop()) loadDesktopSpread();
+    else loadNormalImage();
+
+    pageSelect.value = state.index;
+
+    if (isDesktop()) {
+      const spread = currentSpread();
+      const firstPage = spread[0] + 1;
+      const lastPage = spread[spread.length - 1] + 1;
+      $('progressText').textContent = spread.length === 1
+        ? `Page ${firstPage} of ${TOTAL_PAGES}`
+        : `Pages ${firstPage}–${lastPage} of ${TOTAL_PAGES}`;
+      $('progressFill').style.width = `${(lastPage / TOTAL_PAGES) * 100}%`;
+      const spreadIndex = currentSpreadIndex();
+      $('firstButton').disabled = $('previousButton').disabled = spreadIndex === 0;
+      $('nextButton').disabled = $('lastButton').disabled = spreadIndex === DESKTOP_SPREADS.length - 1;
+    } else {
+      $('progressText').textContent = `Page ${state.index + 1} of ${TOTAL_PAGES}`;
+      $('progressFill').style.width = `${((state.index + 1) / TOTAL_PAGES) * 100}%`;
+      $('firstButton').disabled = $('previousButton').disabled = state.index === 0;
+      $('nextButton').disabled = $('lastButton').disabled = state.index === TOTAL_PAGES - 1;
+    }
 
     const bookmarked = state.bookmarks.includes(state.index);
     $('bookmarkButton').textContent = bookmarked ? 'Bookmarked' : 'Bookmark';
@@ -338,6 +482,15 @@
   }
 
   function move(amount, historyMode='push') {
+    if (isDesktop()) {
+      const nextSpreadIndex = Math.max(0,Math.min(DESKTOP_SPREADS.length - 1,currentSpreadIndex() + amount));
+      const next = DESKTOP_SPREADS[nextSpreadIndex][0];
+      if (next === state.index) return;
+      state.index = next;
+      update({historyMode});
+      return;
+    }
+
     const next = Math.max(0, Math.min(TOTAL_PAGES - 1, state.index + amount));
     if (next === state.index) return;
     state.index = next;
@@ -346,6 +499,46 @@
 
   function loadViewerImage() {
     panelViewer.classList.remove('ready','failed');
+    panelViewerStage.classList.remove('desktop-two-page','desktop-single-page');
+
+    if (isDesktop()) {
+      const spread = currentSpread();
+      panelViewerStage.classList.add(spread.length === 1 ? 'desktop-single-page' : 'desktop-two-page');
+      viewerImage.src = pageFile(spread[0]);
+      viewerImage.alt = `MERCY page ${spread[0] + 1}`;
+      viewerImageSecondary.style.display = spread.length > 1 ? 'block' : 'none';
+      if (spread.length > 1) {
+        viewerImageSecondary.src = pageFile(spread[1]);
+        viewerImageSecondary.alt = `MERCY page ${spread[1] + 1}`;
+      } else {
+        viewerImageSecondary.removeAttribute('src');
+        viewerImageSecondary.alt = '';
+      }
+
+      let loaded = 0;
+      const needed = spread.length;
+      const ready = () => {
+        loaded += 1;
+        if (loaded >= needed) {
+          panelViewer.classList.add('ready');
+          panelViewer.classList.remove('failed');
+        }
+      };
+      const failed = () => {
+        panelViewer.classList.add('failed');
+        panelViewer.classList.remove('ready');
+      };
+      viewerImage.onload = ready;
+      viewerImage.onerror = failed;
+      if (spread.length > 1) {
+        viewerImageSecondary.onload = ready;
+        viewerImageSecondary.onerror = failed;
+      }
+      return;
+    }
+
+    viewerImageSecondary.style.display = 'none';
+    viewerImageSecondary.removeAttribute('src');
     viewerImage.src = pageFile(state.index);
     viewerImage.alt = `MERCY page ${state.index + 1}`;
     viewerImage.onload = () => {
@@ -381,11 +574,18 @@
   }
 
   function moveViewer(amount) {
-    const next = Math.max(0, Math.min(TOTAL_PAGES - 1, state.index + amount));
-    if (next === state.index) return;
-    state.index = next;
-    update({historyMode:'none'});
+    if (isDesktop()) {
+      const nextSpreadIndex = Math.max(0,Math.min(DESKTOP_SPREADS.length - 1,currentSpreadIndex() + amount));
+      const next = DESKTOP_SPREADS[nextSpreadIndex][0];
+      if (next === state.index) return;
+      state.index = next;
+    } else {
+      const next = Math.max(0, Math.min(TOTAL_PAGES - 1, state.index + amount));
+      if (next === state.index) return;
+      state.index = next;
+    }
 
+    update({historyMode:'none'});
     const url = currentUrl();
     url.searchParams.set('viewer','1');
     history.replaceState({book:true,viewer:true,page:state.index + 1},'',url);
@@ -452,10 +652,26 @@
     }
   });
 
+  [leftSpreadPanel,rightSpreadPanel].forEach(panel => {
+    panel.addEventListener('click', () => openViewer());
+    panel.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openViewer();
+      }
+    });
+  });
+
   installSwipe(panelViewer, moveViewer);
 
-  $('firstButton').onclick = () => { if (state.index !== 0) { state.index = 0; update({historyMode:'push'}); } };
-  $('lastButton').onclick = () => { if (state.index !== TOTAL_PAGES - 1) { state.index = TOTAL_PAGES - 1; update({historyMode:'push'}); } };
+  $('firstButton').onclick = () => {
+    const first = isDesktop() ? DESKTOP_SPREADS[0][0] : 0;
+    if (state.index !== first) { state.index = first; update({historyMode:'push'}); }
+  };
+  $('lastButton').onclick = () => {
+    const last = isDesktop() ? DESKTOP_SPREADS[DESKTOP_SPREADS.length - 1][0] : TOTAL_PAGES - 1;
+    if (state.index !== last) { state.index = last; update({historyMode:'push'}); }
+  };
   $('previousButton').onclick = () => move(-1);
   $('nextButton').onclick = () => move(1);
   pageSelect.onchange = () => {
@@ -623,6 +839,11 @@
     document.body.classList.add('night');
     $('themeButton').textContent = 'Day Theme';
   }
+
+  desktopMedia.addEventListener('change', () => {
+    if (state.viewerOpen) loadViewerImage();
+    update({historyMode:'replace'});
+  });
 
   const initialUrl = currentUrl();
   history.replaceState({appRoot:true,page:state.index + 1},'',initialUrl);
