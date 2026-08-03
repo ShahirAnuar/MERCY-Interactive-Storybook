@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#061a43">
+  <title>MERCY — Interactive Storybook</title>
+  <style>
+    :root{
+      --navy:#061a43;
+      --navy2:#0b2a66;
+      --gold:#d7ae46;
+      --paper:#fffaf0;
+      --ink:#172238;
+      --muted:#61708a;
+      --line:rgba(215,174,70,.5);
+      --shadow:0 14px 38px rgba(0,0,0,.2);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-width:320px;min-height:100%;font-family:Georgia,"Times New Roman",serif}
+    body{
+      color:var(--ink);
+      background:radial-gradient(circle at top,#f8edcd,#dfd1ad 55%,#c7b68d);
+      overscroll-behavior-y:none;
+    }
+    button,select{font:inherit}
+    button,select,a{-webkit-tap-highlight-color:transparent}
+    button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #ffd86b;outline-offset:2px}
+
+    header{
+      position:sticky;top:0;z-index:100;
+      display:flex;align-items:center;justify-content:space-between;gap:.8rem;
+      padding:.8rem clamp(.7rem,3vw,1.4rem);
+      color:#fff;background:linear-gradient(115deg,var(--navy),var(--navy2));
+      border-bottom:3px solid var(--gold);
+    }
+    .brand h1{margin:0;color:#f5d77e;letter-spacing:.13em;font-size:clamp(1.05rem,4vw,1.65rem)}
+    .brand p{margin:.15rem 0 0;font-family:system-ui,sans-serif;font-size:.67rem;opacity:.86}
+    .top-actions{
+      width:min(100%,34rem);
+      display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.32rem;
+    }
+    .top-actions button{
+      min-width:0;min-height:2.35rem;padding:.38rem .08rem;
+      border:1px solid rgba(255,255,255,.4);border-radius:.5rem;
+      background:rgba(255,255,255,.1);color:#fff;cursor:pointer;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      font-family:system-ui,sans-serif;font-size:clamp(.59rem,2.7vw,.82rem);font-weight:700;
+    }
+    .top-actions button:hover{background:rgba(255,255,255,.2)}
+
+    main{max-width:1480px;margin:auto;padding:clamp(.7rem,2.5vw,1.8rem)}
+    .reader-bar{
+      display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.65rem;align-items:center;
+      padding:.7rem;background:rgba(255,253,247,.95);border:1px solid var(--line);
+      border-radius:.8rem .8rem 0 0;box-shadow:var(--shadow);
+    }
+    .controls{display:grid;grid-template-columns:1fr;gap:.45rem;min-width:0}
+    .nav-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:.34rem;min-width:0}
+    .nav-buttons button,#pageSelect{
+      width:100%;min-width:0;min-height:2.45rem;padding:.4rem .12rem;
+      border:1px solid #b7c2d3;border-radius:.5rem;background:#fff;color:var(--navy);
+      cursor:pointer;font-family:system-ui,sans-serif;font-weight:700;
+    }
+    .nav-buttons button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(.62rem,2.8vw,.84rem)}
+    .nav-buttons button:disabled{opacity:.48;cursor:not-allowed}
+    #pageSelect{font-size:clamp(.72rem,3vw,.9rem)}
+    .progress{font-family:system-ui,sans-serif;font-size:.77rem;color:var(--muted);white-space:nowrap}
+    .progress-bar{grid-column:1/-1;height:.35rem;background:#ded5bd;border-radius:999px;overflow:hidden}
+    .progress-bar span{display:block;height:100%;width:0;background:var(--gold);transition:width .18s ease}
+
+    .book-stage{
+      min-height:calc(100dvh - 13rem);
+      background:#07142d;border:1px solid var(--line);border-top:0;
+      display:grid;place-items:center;overflow:hidden;box-shadow:var(--shadow);
+    }
+    .normal-page{
+      width:100%;min-height:inherit;display:grid;place-items:center;padding:clamp(.35rem,1vw,.8rem);
+      background:#07142d;cursor:zoom-in;
+    }
+    .normal-page img{
+      display:block;max-width:100%;max-height:calc(100dvh - 15rem);
+      width:auto;height:auto;object-fit:contain;background:#fff;
+      transform:none!important;rotate:none!important;
+      user-select:none;-webkit-user-drag:none;
+    }
+    .loading,.error{
+      font-family:system-ui,sans-serif;font-weight:700;color:#eef3ff;text-align:center;padding:2rem;
+    }
+    .error{display:none}
+    .normal-page.failed .loading{display:none}
+    .normal-page.failed .error{display:block}
+    .normal-page.ready .loading{display:none}
+
+    .caption{
+      min-height:3.8rem;display:flex;align-items:center;justify-content:center;text-align:center;
+      padding:1rem 1.2rem;background:rgba(255,253,247,.97);border:1px solid var(--line);
+      border-top:0;border-radius:0 0 .8rem .8rem;color:var(--navy);
+    }
+
+    .panel-viewer[hidden]{display:none}
+    .panel-viewer{
+      position:fixed;inset:0;z-index:10000;background:#000;
+      display:flex;align-items:center;justify-content:center;
+      width:100vw;height:100dvh;overflow:hidden;
+      touch-action:pan-y pinch-zoom;overscroll-behavior:contain;
+    }
+    .panel-viewer-stage{
+      width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+      overflow:auto;touch-action:pan-y pinch-zoom;overscroll-behavior:contain;
+    }
+    .panel-viewer img{
+      display:block;width:auto;height:auto;max-width:100vw;max-height:100dvh;
+      object-fit:contain;background:#fff;
+      transform:none!important;rotate:none!important;
+      user-select:none;-webkit-user-drag:none;
+    }
+    .viewer-loading,.viewer-error{
+      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      color:#fff6d8;font-family:system-ui,sans-serif;font-weight:700;text-align:center;padding:2rem;
+    }
+    .viewer-error{display:none}
+    .panel-viewer.ready .viewer-loading{display:none}
+    .panel-viewer.failed .viewer-loading{display:none}
+    .panel-viewer.failed .viewer-error{display:flex}
+    .viewer-hint{
+      position:fixed;left:50%;bottom:max(.8rem,env(safe-area-inset-bottom));transform:translateX(-50%);
+      max-width:calc(100vw - 2rem);padding:.55rem .85rem;border:1px solid rgba(215,174,70,.75);
+      border-radius:999px;background:rgba(6,26,67,.9);color:#fff8df;text-align:center;
+      font-family:system-ui,sans-serif;font-size:.72rem;font-weight:700;pointer-events:none;
+    }
+    body.viewer-open{overflow:hidden}
+
+    dialog{
+      max-width:min(34rem,calc(100vw - 2rem));border:1px solid var(--gold);border-radius:.8rem;
+      padding:1.1rem;color:var(--ink);box-shadow:var(--shadow);
+    }
+    dialog::backdrop{background:rgba(0,0,0,.58)}
+    dialog h2{margin-top:0;color:var(--navy)}
+    .dialog-actions{display:flex;justify-content:flex-end;gap:.55rem;margin-top:1rem}
+    .dialog-actions button{
+      min-height:2.5rem;padding:.45rem .8rem;border:1px solid #b7c2d3;border-radius:.5rem;
+      background:#fff;color:var(--navy);cursor:pointer;
+    }
+    .dialog-actions .primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+    .share-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
+    .share-grid a,.share-grid button{
+      min-height:2.65rem;display:flex;align-items:center;justify-content:center;text-align:center;
+      text-decoration:none;padding:.5rem;border:1px solid #c9b675;border-radius:.5rem;
+      background:#fffaf0;color:var(--navy);font-family:system-ui,sans-serif;font-weight:700;cursor:pointer;
+    }
+
+    body.night{background:#06111f;color:#f4f6fb}
+    body.night .reader-bar,body.night .caption{background:#132033;color:#f9e9ad}
+    body.night .nav-buttons button,body.night #pageSelect{background:#1e2d44;color:#fff3c7;border-color:#866f36}
+
+    @media(max-width:760px){
+      header{position:relative;display:grid;grid-template-columns:1fr}
+      .top-actions{width:100%}
+      .reader-bar{grid-template-columns:1fr}
+      .progress{text-align:center}
+      .normal-page img{max-height:calc(100dvh - 17rem)}
+    }
+    @media(max-width:420px){
+      .top-actions button{font-size:.58rem}
+      .nav-buttons button{font-size:.59rem}
+      .share-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>MERCY</h1>
+    <p>Interactive Storybook</p>
+  </div>
+  <div class="top-actions">
+    <button id="readButton" type="button">Read Aloud</button>
+    <button id="shareButton" type="button">Share</button>
+    <button id="themeButton" type="button">Night Theme</button>
+    <button id="bookmarkButton" type="button">Bookmark</button>
+  </div>
+</header>
+
+<main>
+  <section class="reader-bar" aria-label="Book navigation">
+    <div class="controls">
+      <div class="nav-buttons">
+        <button id="firstButton" type="button">First</button>
+        <button id="previousButton" type="button">Previous</button>
+        <button id="nextButton" type="button">Next</button>
+        <button id="lastButton" type="button">Last</button>
+      </div>
+      <select id="pageSelect" aria-label="Select page"></select>
+    </div>
+    <div class="progress" id="progressText">Page 1 of 90</div>
+    <div class="progress-bar"><span id="progressFill"></span></div>
+  </section>
+
+  <section class="book-stage" id="bookStage">
+    <div class="normal-page" id="normalPage" role="button" tabindex="0" aria-label="Open page in full screen">
+      <div class="loading">Loading page…</div>
+      <img id="normalImage" src="page001.webp" alt="Page 1">
+      <div class="error">This page could not be displayed.</div>
+    </div>
+  </section>
+
+  <div class="caption">You are worthy. You were chosen. Ask sincerely, and He will answer.</div>
+</main>
+
+<div class="panel-viewer" id="panelViewer" hidden role="dialog" aria-modal="true" aria-label="Full-screen book page">
+  <div class="panel-viewer-stage" id="panelViewerStage">
+    <div class="viewer-loading">Loading page…</div>
+    <img id="viewerImage" alt="">
+    <div class="viewer-error">This page could not be displayed.</div>
+  </div>
+  <div class="viewer-hint">Swipe left or right to turn the page · Press Back once to close</div>
+</div>
+
+<dialog id="shareDialog">
+  <h2>Share this page</h2>
+  <div class="share-grid">
+    <a id="shareWhatsApp" target="_blank" rel="noopener">WhatsApp</a>
+    <a id="shareFacebook" target="_blank" rel="noopener">Facebook</a>
+    <a id="shareTelegram" target="_blank" rel="noopener">Telegram</a>
+    <a id="shareX" target="_blank" rel="noopener">X (Twitter)</a>
+    <button id="shareMessenger" type="button">Messenger</button>
+    <button id="shareInstagram" type="button">Instagram</button>
+    <button id="shareDiscord" type="button">Discord</button>
+    <button id="shareMore" type="button">More</button>
+    <button id="shareCopy" type="button">Copy Link</button>
+  </div>
+  <div class="dialog-actions">
+    <button id="shareClose" type="button">Close</button>
+  </div>
+</dialog>
+
+<dialog id="exitDialog">
+  <h2>Leave MERCY?</h2>
+  <p>Are you sure you want to quit the storybook?</p>
+  <p>Thank you, and have a nice day.</p>
+  <div class="dialog-actions">
+    <button id="stayButton" type="button">Stay</button>
+    <button id="exitButton" class="primary" type="button">Exit</button>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  'use strict';
+
+  const TOTAL_PAGES = 90;
+  const FILE_PREFIX = 'page';
+  const FILE_SUFFIX = '.webp';
+
+  const $ = id => document.getElementById(id);
+  const pageFile = index => `${FILE_PREFIX}${String(index + 1).padStart(3,'0')}${FILE_SUFFIX}`;
+
+  const state = {
+    index: Math.max(0, Math.min(TOTAL_PAGES - 1, Number(new URLSearchParams(location.search).get('page') || 1) - 1)),
+    viewerOpen: false,
+    bookmarks: JSON.parse(localStorage.getItem('mercy-bookmarks') || '[]'),
+    exitArmedUntil: 0,
+    allowingExit: false,
+    speech: null
+  };
+
+  const normalPage = $('normalPage');
+  const normalImage = $('normalImage');
+  const panelViewer = $('panelViewer');
+  const viewerImage = $('viewerImage');
+  const pageSelect = $('pageSelect');
+
+  for (let i = 0; i < TOTAL_PAGES; i++) {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = `Page ${i + 1}`;
+    pageSelect.append(option);
+  }
+
+  function currentUrl() {
+    const url = new URL(location.href);
+    url.searchParams.set('page', String(state.index + 1));
+    return url;
+  }
+
+  function preloadNearby() {
+    [-2,-1,1,2].forEach(offset => {
+      const index = state.index + offset;
+      if (index < 0 || index >= TOTAL_PAGES) return;
+      const image = new Image();
+      image.src = pageFile(index);
+    });
+  }
+
+  function loadNormalImage() {
+    normalPage.classList.remove('ready','failed');
+    normalImage.src = pageFile(state.index);
+    normalImage.alt = `MERCY page ${state.index + 1}`;
+    normalImage.onload = () => {
+      normalPage.classList.add('ready');
+      normalPage.classList.remove('failed');
+    };
+    normalImage.onerror = () => {
+      normalPage.classList.add('failed');
+      normalPage.classList.remove('ready');
+    };
+  }
+
+  function update({historyMode='replace'} = {}) {
+    loadNormalImage();
+    pageSelect.value = state.index;
+    $('progressText').textContent = `Page ${state.index + 1} of ${TOTAL_PAGES}`;
+    $('progressFill').style.width = `${((state.index + 1) / TOTAL_PAGES) * 100}%`;
+
+    $('firstButton').disabled = $('previousButton').disabled = state.index === 0;
+    $('nextButton').disabled = $('lastButton').disabled = state.index === TOTAL_PAGES - 1;
+
+    const bookmarked = state.bookmarks.includes(state.index);
+    $('bookmarkButton').textContent = bookmarked ? 'Bookmarked' : 'Bookmark';
+    $('bookmarkButton').setAttribute('aria-pressed', String(bookmarked));
+
+    localStorage.setItem('mercy-last-page', String(state.index));
+
+    const url = currentUrl();
+    const data = {book:true,page:state.index + 1};
+    if (historyMode === 'push') history.pushState(data,'',url);
+    else if (historyMode === 'replace') history.replaceState(data,'',url);
+
+    preloadNearby();
+
+    if (state.viewerOpen) loadViewerImage();
+  }
+
+  function move(amount, historyMode='push') {
+    const next = Math.max(0, Math.min(TOTAL_PAGES - 1, state.index + amount));
+    if (next === state.index) return;
+    state.index = next;
+    update({historyMode});
+  }
+
+  function loadViewerImage() {
+    panelViewer.classList.remove('ready','failed');
+    viewerImage.src = pageFile(state.index);
+    viewerImage.alt = `MERCY page ${state.index + 1}`;
+    viewerImage.onload = () => {
+      panelViewer.classList.add('ready');
+      panelViewer.classList.remove('failed');
+    };
+    viewerImage.onerror = () => {
+      panelViewer.classList.add('failed');
+      panelViewer.classList.remove('ready');
+    };
+  }
+
+  function openViewer({pushHistory=true} = {}) {
+    state.viewerOpen = true;
+    panelViewer.hidden = false;
+    document.body.classList.add('viewer-open');
+    loadViewerImage();
+
+    if (pushHistory) {
+      const url = currentUrl();
+      url.searchParams.set('viewer','1');
+      history.pushState({book:true,viewer:true,page:state.index + 1},'',url);
+    }
+  }
+
+  function closeViewer({fromHistory=false} = {}) {
+    if (!state.viewerOpen) return;
+    state.viewerOpen = false;
+    panelViewer.hidden = true;
+    document.body.classList.remove('viewer-open');
+    panelViewer.classList.remove('ready','failed');
+    if (!fromHistory && history.state?.viewer) history.back();
+  }
+
+  function moveViewer(amount) {
+    const next = Math.max(0, Math.min(TOTAL_PAGES - 1, state.index + amount));
+    if (next === state.index) return;
+    state.index = next;
+    update({historyMode:'none'});
+
+    const url = currentUrl();
+    url.searchParams.set('viewer','1');
+    history.replaceState({book:true,viewer:true,page:state.index + 1},'',url);
+  }
+
+  function installSwipe(target, handler) {
+    // Use Pointer Events only. On modern phones, one finger swipe can fire both
+    // touch events and pointer events. Listening to both caused one swipe to
+    // advance twice and skip a page.
+    let startX = 0;
+    let startY = 0;
+    let activePointerId = null;
+    let tracking = false;
+    let handled = false;
+
+    target.addEventListener('pointerdown', event => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      if (activePointerId !== null) return;
+
+      activePointerId = event.pointerId;
+      startX = event.clientX;
+      startY = event.clientY;
+      tracking = true;
+      handled = false;
+
+      try {
+        target.setPointerCapture(event.pointerId);
+      } catch {}
+    });
+
+    target.addEventListener('pointerup', event => {
+      if (!tracking || event.pointerId !== activePointerId || handled) return;
+
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+
+      tracking = false;
+      handled = true;
+      activePointerId = null;
+
+      if (Math.abs(dx) < 42 || Math.abs(dx) <= Math.abs(dy) * 1.15) return;
+      handler(dx < 0 ? 1 : -1);
+    });
+
+    target.addEventListener('pointercancel', event => {
+      if (event.pointerId !== activePointerId) return;
+      tracking = false;
+      handled = false;
+      activePointerId = null;
+    });
+
+    target.addEventListener('lostpointercapture', event => {
+      if (event.pointerId !== activePointerId) return;
+      tracking = false;
+      activePointerId = null;
+    });
+  }
+
+  normalPage.addEventListener('click', () => openViewer());
+  normalPage.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openViewer();
+    }
+  });
+
+  installSwipe(panelViewer, moveViewer);
+
+  $('firstButton').onclick = () => { if (state.index !== 0) { state.index = 0; update({historyMode:'push'}); } };
+  $('lastButton').onclick = () => { if (state.index !== TOTAL_PAGES - 1) { state.index = TOTAL_PAGES - 1; update({historyMode:'push'}); } };
+  $('previousButton').onclick = () => move(-1);
+  $('nextButton').onclick = () => move(1);
+  pageSelect.onchange = () => {
+    const next = Number(pageSelect.value);
+    if (next !== state.index) {
+      state.index = next;
+      update({historyMode:'push'});
+    }
+  };
+
+  $('bookmarkButton').onclick = () => {
+    const position = state.bookmarks.indexOf(state.index);
+    if (position >= 0) state.bookmarks.splice(position,1);
+    else state.bookmarks.push(state.index);
+    localStorage.setItem('mercy-bookmarks',JSON.stringify(state.bookmarks));
+    update({historyMode:'none'});
+  };
+
+  $('themeButton').onclick = () => {
+    const night = document.body.classList.toggle('night');
+    $('themeButton').textContent = night ? 'Day Theme' : 'Night Theme';
+    localStorage.setItem('mercy-theme',night ? 'night' : 'day');
+  };
+
+  $('readButton').onclick = () => {
+    if (!('speechSynthesis' in window)) {
+      alert('Read Aloud is not supported by this browser.');
+      return;
+    }
+    speechSynthesis.cancel();
+    const speech = new SpeechSynthesisUtterance(`MERCY, page ${state.index + 1}.`);
+    speech.lang = 'en-US';
+    speech.rate = 0.9;
+    speechSynthesis.speak(speech);
+  };
+
+  function shareData() {
+    return {
+      title:'MERCY — Interactive Storybook',
+      text:`Read page ${state.index + 1} from MERCY.`,
+      url:currentUrl().toString()
+    };
+  }
+
+  async function copyLink(message='Link copied. You can now paste it into WhatsApp or social media.') {
+    const data = shareData();
+    try {
+      await navigator.clipboard.writeText(data.url);
+      alert(message);
+    } catch {
+      prompt('Copy this link:',data.url);
+    }
+  }
+
+  function prepareShare() {
+    const data = shareData();
+    const url = encodeURIComponent(data.url);
+    const text = encodeURIComponent(data.text);
+
+    $('shareWhatsApp').href = `https://wa.me/?text=${encodeURIComponent(data.text + ' ' + data.url)}`;
+    $('shareFacebook').href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    $('shareTelegram').href = `https://t.me/share/url?url=${url}&text=${text}`;
+    $('shareX').href = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+
+    $('shareMessenger').onclick = async () => {
+      await copyLink('Page link copied. Opening Messenger…');
+      location.href = `fb-messenger://share/?link=${url}`;
+      setTimeout(() => window.open('https://www.messenger.com/','_blank','noopener'),900);
+    };
+    $('shareInstagram').onclick = async () => {
+      await copyLink('Page link copied. Paste it into Instagram.');
+      location.href = 'instagram://app';
+      setTimeout(() => window.open('https://www.instagram.com/','_blank','noopener'),900);
+    };
+    $('shareDiscord').onclick = async () => {
+      await copyLink('Page link copied. Paste it into Discord.');
+      location.href = 'discord://';
+      setTimeout(() => window.open('https://discord.com/app','_blank','noopener'),900);
+    };
+    $('shareMore').onclick = async () => {
+      if (navigator.share) {
+        try { await navigator.share(data); } catch (error) {
+          if (error?.name !== 'AbortError') await copyLink();
+        }
+      } else {
+        await copyLink();
+      }
+    };
+    $('shareCopy').onclick = () => copyLink();
+  }
+
+  $('shareButton').onclick = () => {
+    prepareShare();
+    $('shareDialog').showModal();
+  };
+  $('shareClose').onclick = () => $('shareDialog').close();
+
+  $('stayButton').onclick = () => {
+    $('exitDialog').close();
+    state.exitArmedUntil = 0;
+  };
+  $('exitButton').onclick = () => {
+    $('exitDialog').close();
+    state.allowingExit = true;
+    history.back();
+  };
+
+  function armExitGuard() {
+    const now = Date.now();
+    if (now < state.exitArmedUntil) {
+      $('exitDialog').showModal();
+      history.pushState({guard:true,page:state.index + 1},'',currentUrl());
+      return;
+    }
+    state.exitArmedUntil = now + 2200;
+    alert('Press Back again if you would like to leave MERCY.');
+    history.pushState({guard:true,page:state.index + 1},'',currentUrl());
+  }
+
+  window.addEventListener('popstate', event => {
+    if (state.allowingExit) return;
+
+    if (state.viewerOpen && !event.state?.viewer) {
+      closeViewer({fromHistory:true});
+      const page = Number(event.state?.page || new URLSearchParams(location.search).get('page'));
+      if (Number.isInteger(page) && page >= 1 && page <= TOTAL_PAGES) {
+        state.index = page - 1;
+        update({historyMode:'none'});
+      }
+      return;
+    }
+
+    if (event.state?.viewer) {
+      state.index = Math.max(0,Math.min(TOTAL_PAGES - 1,Number(event.state.page || 1) - 1));
+      openViewer({pushHistory:false});
+      update({historyMode:'none'});
+      return;
+    }
+
+    if (event.state?.appRoot) {
+      armExitGuard();
+      return;
+    }
+
+    const page = Number(event.state?.page || new URLSearchParams(location.search).get('page'));
+    if (Number.isInteger(page) && page >= 1 && page <= TOTAL_PAGES) {
+      state.index = page - 1;
+      update({historyMode:'none'});
+    }
+  });
+
+  document.addEventListener('keydown', event => {
+    if (state.viewerOpen) {
+      if (event.key === 'ArrowLeft') { event.preventDefault(); moveViewer(-1); }
+      else if (event.key === 'ArrowRight') { event.preventDefault(); moveViewer(1); }
+      else if (event.key === 'Escape') { event.preventDefault(); closeViewer(); }
+      return;
+    }
+    if (event.target.matches('button,select,input,textarea')) return;
+    if (event.key === 'ArrowLeft') move(-1);
+    else if (event.key === 'ArrowRight') move(1);
+  });
+
+  if (localStorage.getItem('mercy-theme') === 'night') {
+    document.body.classList.add('night');
+    $('themeButton').textContent = 'Day Theme';
+  }
+
+  const initialUrl = currentUrl();
+  history.replaceState({appRoot:true,page:state.index + 1},'',initialUrl);
+  history.pushState({guard:true,page:state.index + 1},'',initialUrl);
+
+  update({historyMode:'none'});
+})();
+</script>
+</body>
+</html>
